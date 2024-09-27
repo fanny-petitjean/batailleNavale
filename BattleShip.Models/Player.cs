@@ -14,13 +14,9 @@ namespace BattleShip.App
         {
             this.id = Guid.NewGuid();
             this.Name = Name;
-<<<<<<< HEAD
             this.placeShipGrid = new PlaceShipGrid();
             this.isIa = isIa;
-=======
-            this.ships = ships;
             //this.placeShipGrid = new PlaceShipGrid();
->>>>>>> 20720c9d0895205282ffeb1244decceb481da15d
         }
     }
 }
