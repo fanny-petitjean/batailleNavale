@@ -9,7 +9,7 @@ namespace BattleShip.App
 
         public Player? winner { get; set; }
         public bool isWinner { get; set; }
-        public GameHistory history { get; private set; } = new GameHistory();
+        public GameHistory history { get; private set; }
         private static readonly char[] shipLetter = { 'A', 'B', 'C', 'D', 'E', 'F' };
         private static readonly int[] shipSize = { 2, 3, 3, 4, 5 };
 
@@ -17,29 +17,62 @@ namespace BattleShip.App
         public Game(List<Player> player)
         {
             this.players = player;
+            this.history = new GameHistory();
         }
 
-        public void attack(Player attacker, Player defender, int x, int y)
+        public bool attack(Player attacker, Player defender, int x, int y)
         {
             //faire une fonction Vérifier si la case est vide ou pleine
             // Si elle est pleine alors récupérer id du ship + lui enlever une vie
             // retourne True si il est touché ou false sinon
-            if (defender.placeShipGrid.Grid[x, y] != '\0')
+            char cell = defender.placeShipGrid.Grid[x, y];
+            if (cell != '\0' && cell != 'O' && cell != 'X' )
             {
-                char hit = defender.placeShipGrid.Grid[x, y];
-                defender.placeShipGrid.Grid[x, y] = 'X';
-                Ship ship = defender.placeShipGrid.ships.FirstOrDefault(s => s.letter == hit);
+                changeCell(defender,attacker, x, y, 'X', cell);
+                if (checkWinner())
+                {
+                    displayWinner();
+                    return true;
+                }
+            }
+            else if(cell != 'O' && cell != 'X')
+            {
+                changeCell(defender, attacker, x, y, 'O', cell);
+            }
+
+            if (defender.name == "ia")
+            {
+                playIA(defender, attacker);
+            }
+
+        }
+        public void playIA(Player ia, Player player)
+        {
+            //var availableMoves = ia.placeShipGrid.getAvailableMoves;
+            //var randomMove = availableMoves[Random.Shared.Next(availableMoves.Length)];
+            //attack(ia, player, randomMove[0], randomMove[1]);
+
+        }
+
+        public void changeCell(Player defender, Player attacker, int x, int y, char touch, char letter)
+        {
+            defender.placeShipGrid.Grid[x, y] = touch;
+            if(touch == 'X')
+            {
+                Ship ship = defender.placeShipGrid.ships.FirstOrDefault(s => s.letter == letter);
                 ship.RegisterHit();
-                checkWinner();
-
-
-            }
-            else
+                history.AddMove(new Move(attacker, x, y, true));
+            }else
             {
-                defender.placeShipGrid.Grid[x, y] = 'O';
-
+                history.AddMove(new Move(attacker, x, y, false));
             }
+        }
 
+        public void displayWinner()
+        {
+            //display
+
+            //afficher le gagnant
         }
 
         public bool checkWinner()
@@ -67,10 +100,34 @@ namespace BattleShip.App
 
         }
 
-        public void displayGrid()
+        public List<PlaceShipGrid> displayGrid()
         {
+            List<PlaceShipGrid> grids = new List<PlaceShipGrid>();
+            foreach (Player p in players)
+            {
+                grids.Add(p.placeShipGrid);
+            }
+            return grids;
+
 
         }
 
+    }
+    //ajotuer dans placeshipgrid
+    private int[][] GetAvailableMoves(PlaceShipGrid grid)
+    {
+        List<int[]> availableMovesList = new List<int[]>();
+
+        for (int x = 0; x < grid.Grid.GetLength(0); x++)
+        {
+            for (int y = 0; y < grid.Grid.GetLength(1); y++)
+            {
+                if (grid.Grid[x, y] == '\0')
+                {
+                    availableMovesList.Add(new int[] { x, y });
+                }
+            }
+        }
+        return availableMovesList.ToArray();
     }
 }

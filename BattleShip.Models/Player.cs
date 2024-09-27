@@ -5,12 +5,12 @@ namespace BattleShip.App
     public class Player
     {
         public Guid id { get; }
-        public string Name { get; set; }
+        public string name { get; set; }
         public bool isIa { get; }
         public PlaceShipGrid placeShipGrid { get; set; }
 
 
-        public Player(string Name, List<Ship> ships, bool isIa)
+        public Player(string Name, bool isIa)
         {
             this.id = Guid.NewGuid();
             this.Name = Name;
