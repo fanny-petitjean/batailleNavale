@@ -58,7 +58,7 @@ app.MapPost("/attack/{gameId}/{x}/{y}", (Guid gameId, int x, int y) =>
 
     // Vérifier si le jeu est terminé
     bool gameOver = game.checkWinner();
-    string winner = game.winner?.Name;
+    string winner = game.winner?.name;
 
     // Retourner les résultats
     var response = new

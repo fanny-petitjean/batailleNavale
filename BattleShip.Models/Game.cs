@@ -15,29 +15,26 @@ namespace BattleShip.App
         private int currentPlayerIndex;
 
 
-        public Game(List<Player> player)
+        public Game(List<Player> player, int currentPlayer)
         {
             this.players = player;
             this.history = new GameHistory();
-            currentPlayerIndex = 0;
+            currentPlayerIndex = currentPlayer;
         }
 
-        public bool attack(Player attacker, Player defender, int x, int y)
+        public void attack(Player attacker, Player defender, int x, int y)
         {
-            //faire une fonction Vérifier si la case est vide ou pleine
-            // Si elle est pleine alors récupérer id du ship + lui enlever une vie
-            // retourne True si il est touché ou false sinon
             char cell = defender.placeShipGrid.Grid[x, y];
-            if (cell != '\0' && cell != 'O' && cell != 'X' )
+            if (cell != '\0' && cell != 'O' && cell != 'X')
             {
-                changeCell(defender,attacker, x, y, 'X', cell);
+                changeCell(defender, attacker, x, y, 'X', cell);
                 if (checkWinner())
                 {
                     displayWinner();
-                    return true;
+                    return;
                 }
             }
-            else if(cell != 'O' && cell != 'X')
+            else if (cell != 'O' && cell != 'X')
             {
                 changeCell(defender, attacker, x, y, 'O', cell);
             }
@@ -50,21 +47,21 @@ namespace BattleShip.App
         }
         public void playIA(Player ia, Player player)
         {
-            //var availableMoves = ia.placeShipGrid.getAvailableMoves;
-            //var randomMove = availableMoves[Random.Shared.Next(availableMoves.Length)];
-            //attack(ia, player, randomMove[0], randomMove[1]);
-
+            int[][] availableMoves = ia.placeShipGrid.GetAvailableMoves();
+            var randomMove = availableMoves[Random.Shared.Next(availableMoves.Length)];
+            attack(ia, player, randomMove[0], randomMove[1]);
         }
 
         public void changeCell(Player defender, Player attacker, int x, int y, char touch, char letter)
         {
             defender.placeShipGrid.Grid[x, y] = touch;
-            if(touch == 'X')
+            if (touch == 'X')
             {
                 Ship ship = defender.placeShipGrid.ships.FirstOrDefault(s => s.letter == letter);
                 ship.RegisterHit();
                 history.AddMove(new Move(attacker, x, y, true));
-            }else
+            }
+            else
             {
                 history.AddMove(new Move(attacker, x, y, false));
             }
@@ -100,88 +97,62 @@ namespace BattleShip.App
         {
             char[,] grid = player.placeShipGrid.Grid;
             bool isHorizontal = orientation.ToLower() == "horizontal";
-            player.placeShipGrid.PlaceShip(grid , ship, x, y, isHorizontal);
+            player.placeShipGrid.PlaceShip(grid, ship, x, y, isHorizontal);
 
         }
 
-        public List<PlaceShipGrid> displayGrid()
+
+        public char[,] displayGrid(bool isCurrent)
         {
-            List<PlaceShipGrid> grids = new List<PlaceShipGrid>();
-            foreach (Player p in players)
+            if (isCurrent)
             {
-                grids.Add(p.placeShipGrid);
+                Player currentPlayer = players[currentPlayerIndex];
+                return currentPlayer.placeShipGrid.Grid;
             }
-            return grids;
-
-
-        }
-
-    }
-
-    public char[,] displayGrid(bool isCurrent)
-    {
-        if (isCurrent)
-        {
-            Player currentPlayer = players[currentPlayerIndex];
-            return currentPlayer.placeShipGrid.Grid;
-        }
-        else
-        {
-            Player opponent = players[GetNextPlayerIndex()];
-            DisplayGrid(opponent.placeShipGrid, false);
-
-        }
-
-       
-    }
-  
-   
-    private char[,] DisplayGrid(PlaceShipGrid grid, bool showShips)
-    {
-        char[,] newGrid = new char[10,10];
-        
-        for (int x = 0; x < grid.Grid.GetLength(0); x++)
-        {
-            for (int y = 0; y < grid.Grid.GetLength(1); y++)
+            else
             {
-                char cell = grid.Grid[x, y];
+                int opponentIndex = currentPlayerIndex ^ 1;
+                Player opponent = players[opponentIndex];
+                return displayOpponentGrid(opponent.placeShipGrid);
 
-                if (cell == 'X') 
+            }
+
+
+        }
+
+
+        private char[,] displayOpponentGrid(PlaceShipGrid grid)
+        {
+            char[,] newGrid = new char[10, 10];
+
+            for (int x = 0; x < grid.Grid.GetLength(0); x++)
+            {
+                for (int y = 0; y < grid.Grid.GetLength(1); y++)
                 {
-                    newGrid[x, y] = 'X'; 
-                }
-                else if (cell == 'O') 
-                {
-                    newGrid[x, y] = 'O'; 
-                }
-                else if (cell == '\0')
-                {
-                    newGrid[x, y] = '.'; 
-                }
-                else 
-                {
-                    newGrid[x, y] = '.'; 
+                    char cell = grid.Grid[x, y];
+
+                    if (cell == 'X')
+                    {
+                        newGrid[x, y] = 'X';
+                    }
+                    else if (cell == 'O')
+                    {
+                        newGrid[x, y] = 'O';
+                    }
+                    else if (cell == '\0')
+                    {
+                        newGrid[x, y] = '.';
+                    }
+                    else
+                    {
+                        newGrid[x, y] = '.';
+                    }
                 }
             }
+            return newGrid;
         }
     }
-    //ajotuer dans placeshipgrid
-    private int[][] GetAvailableMoves(PlaceShipGrid grid)
-    {
-        List<int[]> availableMovesList = new List<int[]>();
-
-        for (int x = 0; x < grid.Grid.GetLength(0); x++)
-        {
-            for (int y = 0; y < grid.Grid.GetLength(1); y++)
-            {
-                if (grid.Grid[x, y] == '\0')
-                {
-                    availableMovesList.Add(new int[] { x, y });
-                }
-            }
-        }
-        return availableMovesList.ToArray();
-    }
+    
 
 
 }
