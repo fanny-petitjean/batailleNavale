@@ -17,17 +17,71 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 var games = new Dictionary<Guid, Game>();
+app.MapPost("/newgame", () =>
+{
+    var player = new Player("Player 1", false);
+    var ia = new Player("IA", true); 
+    
+    var players = new List<Player> { player, ia };
+    var game = new Game(players);
+    
+    var gameId = Guid.NewGuid();
+    games.Add(gameId, game);
+    var response = new
+    {
+        GameId = gameId.ToString(),
+        PlayerGrid = player.placeShipGrid.Grid
+    };
 
-app.MapPost("/newGame", () =>
+    return Results.Ok(response);
+});
+
+app.MapPost("/attack/{gameId}/{x}/{y}", (Guid gameId, int x, int y) =>
+{
+    if (!games.ContainsKey(gameId))
+    {
+        return Results.NotFound("Game not found");
+    }
+
+    var game = games[gameId];
+    var player = game.players.First(); // Le joueur
+    var ia = game.players.Last(); // L'IA
+
+    // Effectuer l'attaque du joueur sur l'IA
+    game.attack(player, ia, x, y);
+
+    // L'IA effectue une attaque alÃ©atoire sur le joueur
+    Random random = new Random();
+    int iaX = random.Next(10);
+    int iaY = random.Next(10);
+    game.attack(ia, player, iaX, iaY);
+
+    // VÃ©rifier si le jeu est terminÃ©
+    bool gameOver = game.checkWinner();
+    string winner = game.winner?.Name;
+
+    // Retourner les rÃ©sultats
+    var response = new
+    {
+        PlayerHit = ia.placeShipGrid.Grid[x, y] == 'X',
+        IAHit = player.placeShipGrid.Grid[iaX, iaY] == 'X',
+        IACoordinates = new { iaX, iaY },
+        GameOver = gameOver,
+        Winner = winner
+    };
+
+    return Results.Ok(response);
+});
+/*app.MapPost("/newGame", () =>
 {
     List<Ship> ships = new List<Ship>();
     ships.Add(new Ship('A', 5, true,0,2));
     ships.Add(new Ship('B', 4, true, 0, 2));
-    var player = new Player("Player 1", ships);
+    var player = new Player("Player 1" , false);
     List<Player> players = new List<Player>();
     players.Add(player);
     games.Add(new Guid(), new Game(players));
-    //retourner la grille affichée
+    //retourner la grille affichï¿½e
 })
 .WithName("StartNewGame")
 .WithOpenApi();
@@ -37,9 +91,9 @@ app.Run();
 app.MapPost("/{idGame}/attack", (Guid idGame) =>
 {
     //tester l'attaque
-    //retourner état du jeu 
-    //etat du tir (touché, raté)
-    // si gagné, retourner le gagnant
+    //retourner ï¿½tat du jeu 
+    //etat du tir (touchï¿½, ratï¿½)
+    // si gagnï¿½, retourner le gagnant
 
-    //retourner la grille affichée
-});
+    //retourner la grille affichï¿½e
+});*/

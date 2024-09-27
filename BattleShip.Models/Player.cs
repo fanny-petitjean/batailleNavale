@@ -10,13 +10,21 @@ namespace BattleShip.App
         public PlaceShipGrid placeShipGrid { get; set; }
 
 
-        public Player(string Name, bool isIa)
+        public Player(string name, bool isIa)
         {
+            char[,] grid = new char[10, 10];
             this.id = Guid.NewGuid();
-            this.Name = Name;
-            this.placeShipGrid = new PlaceShipGrid();
+            this.name = name;
+    
+            this.placeShipGrid = new PlaceShipGrid(grid);
+            this.isIa = isIa;
+            
+            //this.placeShipGrid = new PlaceShipGrid();
+            
+            this.placeShipGrid = new PlaceShipGrid(grid);
             this.isIa = isIa;
             //this.placeShipGrid = new PlaceShipGrid();
+
         }
     }
 }

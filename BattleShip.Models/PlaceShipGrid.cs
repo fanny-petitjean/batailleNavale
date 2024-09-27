@@ -35,30 +35,32 @@ public class PlaceShipGrid
     {
         foreach (var ship in ships)
         {
-            PlaceShip(grid, ship);
+            bool placed = false;
+            while (!placed)
+            {
+                int x = Random.Shared.Next(GridSize); 
+                int y = Random.Shared.Next(GridSize); 
+                bool isHorizontal = Random.Shared.Next(2) == 0;
+                if (IsSpaceAvailable(grid, x, y, ship.size, isHorizontal))
+                {
+                    PlaceShip(grid, ship, x, y, isHorizontal);
+                    placed = true;  
+                }
+            }
         }
     }
-    
-    private void  PlaceShip(char[,] grid, Ship ship)
+    public void PlaceShip(char[,] grid, Ship ship, int x, int y, bool isHorizontal)
     {
         bool placed = false;
-        Random randomplace = Random.Shared;
-
-        while (!placed)
-        {
-            ship.isHorizontal = randomplace.Next(2) == 0;
-            int x = randomplace.Next(GridSize);
-            int y = randomplace.Next(GridSize);
-
-            if (ship.isHorizontal)
+        ship.isHorizontal = isHorizontal;
+        if (ship.isHorizontal)
             {
                 if (y + ship.size <= GridSize && IsSpaceAvailable(grid, x, y, ship.size, ship.isHorizontal))
                 {
                     for (int i = 0; i < ship.size; i++)
                     {
-                        grid[x,y+i] = ship.letter;
+                        grid[x, y + i] = ship.letter;
                     }
-                    placed = true;
                     ship.positionX = x;
                     ship.positionY = y;
                 }
@@ -69,14 +71,12 @@ public class PlaceShipGrid
                 {
                     for (int i = 0; i < ship.size; i++)
                     {
-                        grid[x+i,y]=ship.letter;
+                        grid[x + i, y] = ship.letter;
                     }
-                    placed = true;
                     ship.positionX = x;
                     ship.positionY = y;
                 }
             }
-        }
     }
     private bool IsSpaceAvailable(char[,] grid, int x, int y, int shipSize, bool isHorizontal)
     {
