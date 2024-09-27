@@ -12,12 +12,14 @@ namespace BattleShip.App
         public GameHistory history { get; private set; }
         private static readonly char[] shipLetter = { 'A', 'B', 'C', 'D', 'E', 'F' };
         private static readonly int[] shipSize = { 2, 3, 3, 4, 5 };
+        private int currentPlayerIndex;
 
 
         public Game(List<Player> player)
         {
             this.players = player;
             this.history = new GameHistory();
+            currentPlayerIndex = 0;
         }
 
         public bool attack(Player attacker, Player defender, int x, int y)
@@ -113,6 +115,54 @@ namespace BattleShip.App
         }
 
     }
+
+    public char[,] displayGrid(bool isCurrent)
+    {
+        if (isCurrent)
+        {
+            Player currentPlayer = players[currentPlayerIndex];
+            return currentPlayer.placeShipGrid.Grid;
+        }
+        else
+        {
+            Player opponent = players[GetNextPlayerIndex()];
+            DisplayGrid(opponent.placeShipGrid, false);
+
+        }
+
+       
+    }
+  
+   
+    private char[,] DisplayGrid(PlaceShipGrid grid, bool showShips)
+    {
+        char[,] newGrid = new char[10,10];
+        
+        for (int x = 0; x < grid.Grid.GetLength(0); x++)
+        {
+            for (int y = 0; y < grid.Grid.GetLength(1); y++)
+            {
+                char cell = grid.Grid[x, y];
+
+                if (cell == 'X') 
+                {
+                    newGrid[x, y] = 'X'; 
+                }
+                else if (cell == 'O') 
+                {
+                    newGrid[x, y] = 'O'; 
+                }
+                else if (cell == '\0')
+                {
+                    newGrid[x, y] = '.'; 
+                }
+                else 
+                {
+                    newGrid[x, y] = '.'; 
+                }
+            }
+        }
+    }
     //ajotuer dans placeshipgrid
     private int[][] GetAvailableMoves(PlaceShipGrid grid)
     {
@@ -130,4 +180,6 @@ namespace BattleShip.App
         }
         return availableMovesList.ToArray();
     }
+
+
 }

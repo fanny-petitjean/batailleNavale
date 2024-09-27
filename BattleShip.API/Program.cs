@@ -34,7 +34,7 @@ app.MapPost("/newGame", () =>
 
 app.Run();
 
-app.MapPost("/{idGame}/attack", (Guid idGame, Command command) =>
+app.MapPost("/{idGame}/attack", (Guid idGame) =>
 {
     //tester l'attaque
     //retourner état du jeu 
