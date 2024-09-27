@@ -62,7 +62,9 @@ namespace BattleShip.App
 
         public void placeShip(Player player, Ship ship, int x, int y, string orientation)
         {
-            player.placeShipGrid.PlaceShip(ship, x, y, isHorizontal);
+            char[,] grid = player.placeShipGrid.Grid;
+            bool isHorizontal = orientation.ToLower() == "horizontal";
+            player.placeShipGrid.PlaceShip(grid , ship, x, y, isHorizontal);
 
         }
 

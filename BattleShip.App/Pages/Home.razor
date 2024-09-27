@@ -1,40 +1,33 @@
-﻿@page "/"
+@page "/"
+@using BattleShip.App.Service
+
+@inject HttpClient Http
+@inject GameState GameState
 
 <h3>Bataille Navale</h3>
 
-<button @onclick="GenerateGrid">Générer la grille</button>
+<button @onclick="StartNewGame">Démarrer une nouvelle partie</button>
 
-<div style="margin-top: 20px;">
-    @if (grid != null)
-    {
-        <table>
-            @for (int i = 0; i < grid.GetLength(0); i++)
-            {
-                <tr>
-                    @for (int j = 0; j < grid.GetLength(1); j++)
-                    {
-                        <td style="padding: 5px; border: 1px solid black;">
-                            @if (grid[i, j] == '\0')
-                            {
-                                <span>.</span> 
-                            }
-                            else
-                            {
-                                <span>@grid[i, j]</span> 
-                            }
-                        </td>
-                    }
-                </tr>
-            }
-        </table>
-    }
-</div>
+@if (GameState.PlayerGrid != null)
+{
+<Game />
+}
 
 @code {
-    private char[,] grid;  
-    private void GenerateGrid()
-    {
-        grid = new char[10, 10];  // Créer une grille 10x10
-        PlaceShipGrid placeShipGrid = new PlaceShipGrid(grid);
-    }
+private async Task StartNewGame()
+{
+var response = await Http.PostAsJsonAsync("api/battleship/newgame", new { });
+if (response.IsSuccessStatusCode)
+{
+var gameData = await response.Content.ReadFromJsonAsync<NewGameResponse>();
+GameState.GameId = gameData.GameId;
+GameState.InitializePlayerGrid(gameData.PlayerGrid);
+}
+}
+
+public class NewGameResponse
+{
+public string GameId { get; set; }
+public char[,] PlayerGrid { get; set; }
+}
 }
