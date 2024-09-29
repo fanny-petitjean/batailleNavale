@@ -1,6 +1,5 @@
-﻿using BattleShip.App;
-
-namespace BattleShip.App
+﻿
+namespace BattleShip.Models
 {
     public class Player
     {
@@ -16,14 +15,8 @@ namespace BattleShip.App
             this.id = Guid.NewGuid();
             this.name = name;
     
-            this.placeShipGrid = new PlaceShipGrid(grid);
+            this.placeShipGrid = new PlaceShipGrid();
             this.isIa = isIa;
-            
-            //this.placeShipGrid = new PlaceShipGrid();
-            
-            this.placeShipGrid = new PlaceShipGrid(grid);
-            this.isIa = isIa;
-            //this.placeShipGrid = new PlaceShipGrid();
 
         }
     }

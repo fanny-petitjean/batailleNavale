@@ -1,6 +1,9 @@
 @BattleShip.API_HostAddress = http://localhost:5186
 
-GET {{BattleShip.API_HostAddress}}/weatherforecast/
+POST {{BattleShip.API_HostAddress}}/newGame
 Accept: application/json
+Content-Type: application/json
 
-###
+POST {{BattleShip.API_HostAddress}}/attack/{{gameId}}?x={{x}}&y={{y}}
+Accept: application/json
+Content-Type: application/json

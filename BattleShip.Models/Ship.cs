@@ -1,6 +1,5 @@
-﻿using BattleShip.Models;
-
-namespace BattleShip.App
+﻿
+namespace BattleShip.Models
 {
     public class Ship
     {

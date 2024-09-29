@@ -1,0 +1,131 @@
+﻿@using BattleShip.App.Service
+@using BattleShip.Models
+@inject HttpClient Http
+@inject GameState GameState
+@inject NavigationManager Navigation
+
+
+<style>
+    .grid-image {
+        width: 100%; 
+        height: auto;
+        max-width: 20px;
+    }
+
+    td {
+        text-align: center;
+        min-width: 20px;
+    }
+</style>
+
+<h4>Grille du Joueur</h4>
+<table>
+    @for (int i = 0; i < GameState.PlayerGrid.GetLength(0); i++)
+    {
+        <tr>
+            @for (int j = 0; j < GameState.PlayerGrid.GetLength(1); j++)
+            {
+                <td style="padding: 5px; border: 1px solid black;">
+                    @if (GameState.PlayerGrid[i, j] == '\0')
+                    {
+                        <span>.</span>
+                    }
+                    else if (GameState.PlayerGrid[i, j] == 'X')
+                    {
+                        <img src="images/hit.png" alt="Touché" class="grid-image" />
+                    }
+                    else if (GameState.PlayerGrid[i, j] == 'O')
+                    {
+                        <img src="images/miss.jpeg" alt="Raté" class="grid-image" />
+                    }
+                    else
+                    {
+                        <span>@GameState.PlayerGrid[i, j]</span>
+                    }
+                </td>
+            }
+        </tr>
+    }
+</table>
+
+<h4>Grille de l'Adversaire</h4>
+<table>
+    @for (int i = 0; i < GameState.OpponentGrid.GetLength(0); i++)
+    {
+        <tr>
+            @for (int j = 0; j < GameState.OpponentGrid.GetLength(1); j++)
+            {
+                int capturedI = i;
+                int capturedJ = j;
+
+                @if (GameState.OpponentGrid[i, j] == null)
+                {
+                    <td @onclick="@(() => GameState.IsPlayerTurn ? MakeAttack(capturedI, capturedJ) : null)" style="padding: 5px; border: 1px solid black; cursor: pointer;">
+                        <span id="@i-@j">.</span>
+                    </td>
+                }
+                else
+                {
+                    <td style="padding: 5px; border: 1px solid black; cursor: pointer;">
+                        @if (GameState.OpponentGrid[i, j] == true)
+                        {
+                            <img src="images/hit.png" alt="Touché" class="grid-image" /> 
+                        }
+                        else
+                        {
+                            <img src="images/miss.jpeg" alt="Raté" class="grid-image" /> 
+                        }
+                    </td>
+                }
+            }
+        </tr>
+    }
+</table>
+
+@code {
+    private async Task MakeAttack(int x, int y)
+    {
+        if (!GameState.IsPlayerTurn) return; 
+
+
+        if (GameState.GameId == null)
+            return;
+
+        var response = await Http.PostAsJsonAsync($"/attack/{GameState.GameId}?x={x}&y={y}", new { });
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return;
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<AttackResponse>();
+
+        GameState.UpdateOpponentGrid(x, y, result.PlayerHit);
+
+        if (result.GameOver)
+        {
+            GameState.WinnerName = result.Winner;
+            Navigation.NavigateTo("/end");
+        }
+        Console.WriteLine($"Vous avez touché un bateau en {result.IAX}.");
+
+        if (result.IAHit!= '.')
+        {
+            GameState.IsPlayerTurn = false;
+            Console.WriteLine($"L'IA a touché votre bateau en {result.IAX}, {result.IAY}.");
+            GameState.UpdatePlayerGrid(result.IAX,result.IAY ,result.IAHit);
+            GameState.IsPlayerTurn = true;
+
+        }
+    }
+
+    public class AttackResponse
+    {
+        public bool PlayerHit { get; set; }
+        public char IAHit { get; set; }
+        public int IAX { get; set; }
+        public int IAY { get; set; }
+        public bool GameOver { get; set; }
+        public string Winner { get; set; }
+    }
+}

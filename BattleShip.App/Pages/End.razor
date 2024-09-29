@@ -1,4 +1,4 @@
-@page "/gameIA"
+﻿@page "/end"
 @using BattleShip.Models
 @using BattleShip.App.Service
 
@@ -6,22 +6,31 @@
 @inject NavigationManager Navigation
 @inject GameState GameState
 
-<h3>Bataille Navale</h3>
+<h3>FIN DE PARTIE</h3>
 
-<button @onclick="StartNewGameIA">Démarrer une nouvelle partie</button>
-
-@if (GameState.PlayerGrid != null)
+@if (GameState.WinnerName != null)
 {
-    <GameIA />
+    <p>Le gagnant est : <strong> @GameState.WinnerName</strong></p>
+}
+else
+{
+    <p>Le jeu est terminé, mais aucun gagnant n'a été déterminé.</p>
+}
+
+<button @onclick="StartNewGameIA">Nouvelle partie IA</button>
+<button @onclick="StartNewGamePlayer">Nouvelle partie avec un autre joueur</button>
+
+@if (!string.IsNullOrEmpty(DebugMessage))
+{
+    <div>@DebugMessage</div>
 }
 
 @code {
-    private string DebugMessage { get; set; } 
-
+    private string DebugMessage { get; set; }
     private async Task StartNewGameIA()
     {
 
-        var response = await Http.PostAsJsonAsync("https://localhost:7263/newGame", new { });
+        var response = await Http.PostAsJsonAsync("/newGame", new { });
         if (response.IsSuccessStatusCode)
         {
             var gameData = await response.Content.ReadFromJsonAsync<NewGameResponse>();
@@ -33,7 +42,8 @@
             bool?[,] opponentGrid = GameState.ConvertListToBoolArray(gameData.OpponentGrid);
             GameState.InitializePlayerGrid(playerGrid);
             GameState.InitializeOpponentGrid(opponentGrid);
-            Navigation.NavigateTo("/game");
+            GameState.IsPlayerTurn = true;
+            Navigation.NavigateTo("/gameIA");
 
         }
         else
@@ -41,6 +51,16 @@
             DebugMessage = "Erreur lors du démarrage de la nouvelle partie.";
             Console.Error.WriteLine(DebugMessage);
         }
+
+    }
+
+    private async Task StartNewGamePlayer()
+    {
+        DebugMessage = "Fonctionnalité StartNewGamePlayer non encore implémentée.";
+        Console.WriteLine(DebugMessage);
+
+        DebugMessage += "\nSortie de StartNewGamePlayer.";
+        Console.WriteLine(DebugMessage);
     }
 
     public class NewGameResponse

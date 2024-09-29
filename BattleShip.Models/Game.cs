@@ -1,7 +1,7 @@
-﻿using BattleShip.Models;
+﻿using System.Collections.Generic;
 using System.Numerics;
 
-namespace BattleShip.App
+namespace BattleShip.Models
 {
     public class Game
     {
@@ -12,8 +12,12 @@ namespace BattleShip.App
         public GameHistory history { get; private set; }
         private static readonly char[] shipLetter = { 'A', 'B', 'C', 'D', 'E', 'F' };
         private static readonly int[] shipSize = { 2, 3, 3, 4, 5 };
-        private int currentPlayerIndex;
-
+        public int currentPlayerIndex { get; set; } 
+        public Game()
+        {
+            this.players = new List<Player>();
+            this.history = new GameHistory();
+        }
 
         public Game(List<Player> player, int currentPlayer)
         {
@@ -22,32 +26,37 @@ namespace BattleShip.App
             currentPlayerIndex = currentPlayer;
         }
 
-        public void attack(Player attacker, Player defender, int x, int y)
+        public char attack(Player attacker, Player defender, int x, int y)
         {
             char cell = defender.placeShipGrid.Grid[x, y];
+            char response = 'n';
             if (cell != '\0' && cell != 'O' && cell != 'X')
             {
                 changeCell(defender, attacker, x, y, 'X', cell);
                 if (checkWinner())
                 {
                     displayWinner();
-                    return;
+                    return 'W';
                 }
+                response = 'X';
+
             }
             else if (cell != 'O' && cell != 'X')
             {
                 changeCell(defender, attacker, x, y, 'O', cell);
+                response = 'O';
             }
 
             if (defender.name == "ia")
             {
                 playIA(defender, attacker);
             }
+            return response;
 
         }
         public void playIA(Player ia, Player player)
         {
-            int[][] availableMoves = ia.placeShipGrid.GetAvailableMoves();
+            int[][] availableMoves = player.placeShipGrid.GetAvailableMoves();
             var randomMove = availableMoves[Random.Shared.Next(availableMoves.Length)];
             attack(ia, player, randomMove[0], randomMove[1]);
         }
@@ -81,15 +90,11 @@ namespace BattleShip.App
                 bool allShipDead = p.placeShipGrid.ships.All(ship => ship.isDead);
                 if (allShipDead)
                 {
-                    winner = players.FirstOrDefault(p => p != winner);
+                    winner = players.FirstOrDefault(player => player != p);
                     isWinner = true;
-                    winner = p;
                     return true;
                 }
             }
-            //ajouter la variable Grille dans PlaceShipGrid
-            //ajouter une fonction qui vérifie si tous les bateaux sont coulés
-
             return false;
         }
 
@@ -101,54 +106,51 @@ namespace BattleShip.App
 
         }
 
-
-        public char[,] displayGrid(bool isCurrent)
+/*
+        public List<List<char>> displayGrid(bool isCurrent)
         {
             if (isCurrent)
             {
                 Player currentPlayer = players[currentPlayerIndex];
-                return currentPlayer.placeShipGrid.Grid;
+                return displayListGrid(currentPlayer.placeShipGrid, true);
             }
             else
             {
                 int opponentIndex = currentPlayerIndex ^ 1;
                 Player opponent = players[opponentIndex];
-                return displayOpponentGrid(opponent.placeShipGrid);
+                return displayListGrid(opponent.placeShipGrid, false);
 
             }
 
 
         }
+*/
 
-
-        private char[,] displayOpponentGrid(PlaceShipGrid grid)
+        public bool?[,] displayOpponentGrid(PlaceShipGrid grid)
         {
-            char[,] newGrid = new char[10, 10];
+            var newGrid = new bool?[10,10];
 
             for (int x = 0; x < grid.Grid.GetLength(0); x++)
             {
                 for (int y = 0; y < grid.Grid.GetLength(1); y++)
                 {
                     char cell = grid.Grid[x, y];
-
-                    if (cell == 'X')
-                    {
-                        newGrid[x, y] = 'X';
-                    }
-                    else if (cell == 'O')
-                    {
-                        newGrid[x, y] = 'O';
-                    }
-                    else if (cell == '\0')
-                    {
-                        newGrid[x, y] = '.';
-                    }
-                    else
-                    {
-                        newGrid[x, y] = '.';
-                    }
+                        if (cell == 'X')
+                        {
+                            newGrid[x,y]=true;
+                        }
+                        else if (cell == 'O')
+                        {
+                            newGrid[x, y] = false;
+                        }
+                        else
+                        {
+                            newGrid[x,y]= null;
+                        }                    
                 }
+
             }
+            Console.WriteLine(newGrid);
             return newGrid;
         }
     }

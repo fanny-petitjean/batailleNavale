@@ -1,99 +1,125 @@
 using BattleShip.App;
 using BattleShip.Models;
+using Microsoft.AspNetCore.Mvc;
+using BattleShip.App.Service;
+using System;
+using System.Collections.Generic;
+using BattleShip.API;
 
 var builder = WebApplication.CreateBuilder(args);
+var gameService = new GameService();
+// Configuration CORS pour Blazor
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowBlazorApp",
+        builder =>
+        {
+            builder.WithOrigins("https://localhost:7087")
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials();
+        });
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddSingleton<GameService>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+app.UseCors("AllowBlazorApp");
+app.UseHttpsRedirection();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+var converter = new Converter();
 
-app.UseHttpsRedirection();
-var games = new Dictionary<Guid, Game>();
-app.MapPost("/newgame", () =>
+app.MapPost("/newGame", () =>
 {
     var player = new Player("Player 1", false);
-    var ia = new Player("IA", true); 
-    
+    var ia = new Player("ia", true);
+
     var players = new List<Player> { player, ia };
-    var game = new Game(players);
-    
-    var gameId = Guid.NewGuid();
-    games.Add(gameId, game);
+    var game = new Game(players, 0);
+
+    Guid guid = gameService.AddGame(game);
+
+    var PlayerGrid = converter.ConvertCharArrayToList(player.placeShipGrid.Grid);
+    var OpponentGrid = converter.ConvertBoolArrayToList(game.displayOpponentGrid(ia.placeShipGrid));
     var response = new
     {
-        GameId = gameId.ToString(),
-        PlayerGrid = player.placeShipGrid.Grid
+        GameId = guid.ToString(),
+        Player = player.name,
+        Opponent = ia.name,
+        PlayerGrid = PlayerGrid,
+        OpponentGrid = OpponentGrid
     };
 
     return Results.Ok(response);
 });
 
-app.MapPost("/attack/{gameId}/{x}/{y}", (Guid gameId, int x, int y) =>
+app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int y) =>
 {
-    if (!games.ContainsKey(gameId))
+
+    var game = gameService.GetGame(gameId);
+    if (game == null)
     {
+        Console.WriteLine("Jeu non trouvé pour l'ID : " + gameId);
         return Results.NotFound("Game not found");
     }
 
-    var game = games[gameId];
-    var player = game.players.First(); // Le joueur
-    var ia = game.players.Last(); // L'IA
+    var player = game.players.First(); 
+    var ia = game.players.Last();
 
-    // Effectuer l'attaque du joueur sur l'IA
-    game.attack(player, ia, x, y);
+    char responseChar = game.attack(player, ia, x, y);
 
-    // L'IA effectue une attaque aléatoire sur le joueur
-    Random random = new Random();
-    int iaX = random.Next(10);
-    int iaY = random.Next(10);
-    game.attack(ia, player, iaX, iaY);
-
-    // Vérifier si le jeu est terminé
-    bool gameOver = game.checkWinner();
+    bool gameOver = false;
     string winner = game.winner?.name;
+    if (responseChar == 'W')
+    {
+        gameOver = game.checkWinner();
+        winner = game.winner?.name; 
+    }
 
-    // Retourner les résultats
+    char IAH = '.';
+    int iaX = -1;
+    int iaY = -1;
+    if (game.history.LastMoveName()=="ia")
+    {
+        Console.WriteLine("Dernier coup joué par l'IA");
+        IAH = game.history.LastMove().isHit ? 'X' : 'O';
+        iaX = game.history.LastMove().x;
+        iaY = game.history.LastMove().y;
+        Console.WriteLine($"Dernier coup joué par l'IA : {iaX}, {iaY}");
+        gameOver = game.checkWinner();
+        winner = game.winner?.name;
+    }
+
+
+
     var response = new
     {
         PlayerHit = ia.placeShipGrid.Grid[x, y] == 'X',
-        IAHit = player.placeShipGrid.Grid[iaX, iaY] == 'X',
-        IACoordinates = new { iaX, iaY },
+        IAHit = IAH,
+        IAX = iaX,
+        IAY = iaY,
         GameOver = gameOver,
-        Winner = winner
+        Winner = winner,
+
     };
+
+    Console.WriteLine("Réponse de l'attaque : " + response);
+    Console.WriteLine($"Sortie de la méthode /attack avec gameId: {gameId}.");
 
     return Results.Ok(response);
 });
-/*app.MapPost("/newGame", () =>
-{
-    List<Ship> ships = new List<Ship>();
-    ships.Add(new Ship('A', 5, true,0,2));
-    ships.Add(new Ship('B', 4, true, 0, 2));
-    var player = new Player("Player 1" , false);
-    List<Player> players = new List<Player>();
-    players.Add(player);
-    games.Add(new Guid(), new Game(players));
-    //retourner la grille affich�e
-})
-.WithName("StartNewGame")
-.WithOpenApi();
+
 
 app.Run();
 
-app.MapPost("/{idGame}/attack", (Guid idGame) =>
-{
-    //tester l'attaque
-    //retourner �tat du jeu 
-    //etat du tir (touch�, rat�)
-    // si gagn�, retourner le gagnant
 
-    //retourner la grille affich�e
-});*/
+

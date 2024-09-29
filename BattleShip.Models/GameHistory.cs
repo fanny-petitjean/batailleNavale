@@ -16,7 +16,7 @@
         public bool RemoveMove() {
             if( moves.Count == 0 ) return false ;
             Move lastMove = moves.Last();
-            lastMove.player.placeShipGrid.Grid[lastMove.x, lastMove.y] = lastMove.previousValue;
+            lastMove.attacker.placeShipGrid.Grid[lastMove.x, lastMove.y] = lastMove.previousValue;
 
 
             moves.Remove(lastMove);
@@ -27,8 +27,21 @@
         {
             foreach (Move move in moves)
             {
-                Console.WriteLine($"Player {move.player.name} at position {move.x}, {move.y} {(move.isHit ? "hit" : "missed")}");
+                Console.WriteLine($"Player {move.attacker.name} at position {move.x}, {move.y} {(move.isHit ? "hit" : "missed")}");
             }
+        }
+
+        public string LastMoveName()
+        {
+            if (moves.Count == 0) return null;
+            Move lastMove = moves.Last();
+            return lastMove.attacker.name;
+        }
+
+        public Move LastMove()
+        {
+            if (moves.Count == 0) return null;
+            return moves.Last();
         }
 
     }
