@@ -53,7 +53,7 @@ namespace BattleShip.Models
             }
             return response;
 
-        }*/
+        }
         public void playIA(Player ia, Player player)
         {
             int[][] availableMoves = player.placeShipGrid.GetAvailableMoves();

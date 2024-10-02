@@ -13,7 +13,7 @@
             moves.Add(move);
         }
 
-        /*public bool RemoveMove() {
+        public bool RemoveMove() {
             if( moves.Count == 0 ) return false ;
             Move lastMove = moves.Last();
             lastMove.attacker.placeShipGrid.Grid[lastMove.x, lastMove.y] = lastMove.previousValue;
@@ -29,7 +29,7 @@
             {
                 Console.WriteLine($"Player {move.attacker.name} at position {move.x}, {move.y} {(move.isHit ? "hit" : "missed")}");
             }
-        }*/
+        }
 
         public string LastMoveName()
         {
@@ -42,6 +42,16 @@
         {
             if (moves.Count == 0) return null;
             return moves.Last();
+        }
+        public Move SecondLastMove()
+        {
+            if (moves.Count < 2) return null; // Vérifie qu'il y a au moins deux coups
+            return moves[moves.Count - 2]; // Retourne l'avant-dernier coup
+        }
+
+        public List<Move> GetMoves()
+        {
+            return moves;
         }
 
     }

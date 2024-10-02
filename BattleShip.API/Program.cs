@@ -20,6 +20,18 @@ builder.Services.AddCors(options =>
                    .AllowCredentials();
         });
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
+
+
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -27,6 +39,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<GameService>();
 
 var app = builder.Build();
+app.UseCors("AllowAll");
 
 app.UseCors("AllowBlazorApp");
 app.UseHttpsRedirection();
@@ -88,6 +101,13 @@ app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int
     char IAH = '.';
     int iaX = -1;
     int iaY = -1;
+    Move moveIa = null;
+    Move move = game.history.LastMove();
+    x = move.x;
+    y = move.y;
+    string playerId = move.attacker.id.ToString();
+    string iaId = "";
+
     if (game.history.LastMoveName()=="ia")
     {
         Console.WriteLine("Dernier coup joué par l'IA");
@@ -97,18 +117,29 @@ app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int
         Console.WriteLine($"Dernier coup joué par l'IA : {iaX}, {iaY}");
         gameOver = game.checkWinner();
         winner = game.winner?.name;
+        moveIa = game.history.LastMove();
+        move = game.history.LastMove();
+        iaId = move.attacker.id.ToString();
+        Move move1 = game.history.SecondLastMove();
+        x = move1.x;
+        y = move1.y;
+        playerId = move1.attacker.id.ToString();
+
     }
 
 
-
-    var response = new
+var response = new
     {
         PlayerHit = ia.placeShipGrid.Grid[x, y] == 'X',
+        PlayerX = x,
+        PlayerY = y,
+        PlayerId = playerId,
+        IaId = iaId,
         IAHit = IAH,
         IAX = iaX,
         IAY = iaY,
         GameOver = gameOver,
-        Winner = winner,
+        Winner = winner
 
     };
 

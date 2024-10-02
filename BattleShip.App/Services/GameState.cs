@@ -1,4 +1,5 @@
 using BattleShip.Models;
+using System.Net.Http.Json;
 
 namespace BattleShip.App.Service;
 
@@ -9,6 +10,8 @@ public class GameState
     public string GameId { get; set; }
     public bool IsPlayerTurn { get; set; } 
     public string WinnerName { get; set; }
+    public List<Move> Moves { get; set; } = new List<Move>();
+
 
 
     public void InitializeNewGame(char[,] playerGrid, string gameId)
@@ -26,6 +29,16 @@ public class GameState
         OpponentGrid = grid;
     }
 
+    public void AddMove(Move move)
+    {
+        Moves.Add(move);
+    }
+
+    public bool RemoveMove(Move move)
+    {
+        return Moves.Remove(move);
+    }
+
     public void UpdateOpponentGrid(int x, int y, bool hit)
     {
         OpponentGrid[x, y] = hit;  // Mise à jour de la grille avec touché ou raté
@@ -35,10 +48,7 @@ public class GameState
     {
         PlayerGrid[x, y] = isHit;
     }
-        public void UpdatePlayerGrid(int x, int y, char isHit)
-    {
-        PlayerGrid[x, y] = isHit;
-    }
+
     private char[,] ConvertListToArray(List<List<char>> list)
     {
         if (list == null || list.Count == 0)
