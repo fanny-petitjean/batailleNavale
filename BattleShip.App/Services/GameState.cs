@@ -11,6 +11,12 @@ public class GameState
     public string WinnerName { get; set; }
 
 
+    public void InitializeNewGame(char[,] playerGrid, string gameId)
+    {
+        PlayerGrid = playerGrid;
+        OpponentGrid = new bool?[10, 10];  // Grille de l'adversaire masquée
+        GameId = gameId;
+    }
     public void InitializePlayerGrid(char[,] grid)
     {
         PlayerGrid = grid;
@@ -20,15 +26,19 @@ public class GameState
         OpponentGrid = grid;
     }
 
-    public void UpdateOpponentGrid(int x, int y, bool isHit)
+    public void UpdateOpponentGrid(int x, int y, bool hit)
     {
-        OpponentGrid[x, y] = isHit;
+        OpponentGrid[x, y] = hit;  // Mise à jour de la grille avec touché ou raté
     }
+
     public void UpdatePlayerGrid(int x, int y, char isHit)
     {
         PlayerGrid[x, y] = isHit;
     }
-
+        public void UpdatePlayerGrid(int x, int y, char isHit)
+    {
+        PlayerGrid[x, y] = isHit;
+    }
     private char[,] ConvertListToArray(List<List<char>> list)
     {
         if (list == null || list.Count == 0)

@@ -53,7 +53,7 @@ namespace BattleShip.Models
             }
             return response;
 
-        }
+        }*/
         public void playIA(Player ia, Player player)
         {
             int[][] availableMoves = player.placeShipGrid.GetAvailableMoves();
@@ -106,25 +106,17 @@ namespace BattleShip.Models
 
         }
 
-/*
-        public List<List<char>> displayGrid(bool isCurrent)
+ public List<PlaceShipGrid> displayGrid()
         {
-            if (isCurrent)
+            List<PlaceShipGrid> grids = new List<PlaceShipGrid>();
+            foreach (Player p in players)
             {
-                Player currentPlayer = players[currentPlayerIndex];
-                return displayListGrid(currentPlayer.placeShipGrid, true);
+                grids.Add(p.placeShipGrid);
             }
-            else
-            {
-                int opponentIndex = currentPlayerIndex ^ 1;
-                Player opponent = players[opponentIndex];
-                return displayListGrid(opponent.placeShipGrid, false);
-
-            }
+            return grids;
 
 
         }
-*/
 
         public bool?[,] displayOpponentGrid(PlaceShipGrid grid)
         {

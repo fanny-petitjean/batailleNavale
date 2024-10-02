@@ -13,7 +13,7 @@
             moves.Add(move);
         }
 
-        public bool RemoveMove() {
+        /*public bool RemoveMove() {
             if( moves.Count == 0 ) return false ;
             Move lastMove = moves.Last();
             lastMove.attacker.placeShipGrid.Grid[lastMove.x, lastMove.y] = lastMove.previousValue;
@@ -29,7 +29,7 @@
             {
                 Console.WriteLine($"Player {move.attacker.name} at position {move.x}, {move.y} {(move.isHit ? "hit" : "missed")}");
             }
-        }
+        }*/
 
         public string LastMoveName()
         {
