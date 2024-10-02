@@ -1,18 +1,23 @@
-namespace BattleShip.App.Service;
-
 public class GameState
 {
-    public char[,] PlayerGrid { get; private set; } = new char[10, 10];
-    public bool?[,] OpponentGrid { get; private set; } = new bool?[10, 10];
-    public string GameId { get; set; }
+    public char[,] PlayerGrid { get; private set; }  // Grille du joueur
+    public bool?[,] OpponentGrid { get; private set; }  // Grille de l'adversaire (masquée)
+    public string GameId { get; private set; }
 
-    public void InitializePlayerGrid(char[,] grid)
+    public void InitializeNewGame(char[,] playerGrid, string gameId)
     {
-        PlayerGrid = grid;
+        PlayerGrid = playerGrid;
+        OpponentGrid = new bool?[10, 10];  // Grille de l'adversaire masquée
+        GameId = gameId;
     }
 
-    public void UpdateOpponentGrid(int x, int y, bool isHit)
+    public void UpdateOpponentGrid(int x, int y, bool hit)
     {
-        OpponentGrid[x, y] = isHit;
+        OpponentGrid[x, y] = hit;  // Mise à jour de la grille avec touché ou raté
+    }
+
+    public void UpdatePlayerGrid(int x, int y, bool hit)
+    {
+        PlayerGrid[x, y] = hit ? 'X' : 'O';  // Mise à jour de la grille du joueur
     }
 }

@@ -48,17 +48,17 @@ app.MapPost("/attack/{gameId}/{x}/{y}", (Guid gameId, int x, int y) =>
     var ia = game.players.Last(); // L'IA
 
     // Effectuer l'attaque du joueur sur l'IA
-    game.attack(player, ia, x, y);
+    //game.attack(player, ia, x, y);
 
     // L'IA effectue une attaque aléatoire sur le joueur
     Random random = new Random();
     int iaX = random.Next(10);
     int iaY = random.Next(10);
-    game.attack(ia, player, iaX, iaY);
+    //game.attack(ia, player, iaX, iaY);
 
     // Vérifier si le jeu est terminé
     bool gameOver = game.checkWinner();
-    string winner = game.winner?.Name;
+    string winner = game.winner?.name;
 
     // Retourner les résultats
     var response = new

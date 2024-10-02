@@ -20,7 +20,7 @@ namespace BattleShip.App
             this.history = new GameHistory();
         }
 
-        public bool attack(Player attacker, Player defender, int x, int y)
+        /*public bool attack(Player attacker, Player defender, int x, int y)
         {
             //faire une fonction Vérifier si la case est vide ou pleine
             // Si elle est pleine alors récupérer id du ship + lui enlever une vie
@@ -45,7 +45,7 @@ namespace BattleShip.App
                 playIA(defender, attacker);
             }
 
-        }
+        }*/
         public void playIA(Player ia, Player player)
         {
             //var availableMoves = ia.placeShipGrid.getAvailableMoves;
@@ -116,20 +116,6 @@ namespace BattleShip.App
 
     }
     //ajotuer dans placeshipgrid
-    private int[][] GetAvailableMoves(PlaceShipGrid grid)
-    {
-        List<int[]> availableMovesList = new List<int[]>();
-
-        for (int x = 0; x < grid.Grid.GetLength(0); x++)
-        {
-            for (int y = 0; y < grid.Grid.GetLength(1); y++)
-            {
-                if (grid.Grid[x, y] == '\0')
-                {
-                    availableMovesList.Add(new int[] { x, y });
-                }
-            }
-        }
-        return availableMovesList.ToArray();
-    }
+    // c'est fait 
+    
 }

@@ -95,5 +95,22 @@ public class PlaceShipGrid
         }
         return true;  
     }
+    
+    private int[][] GetAvailableMoves(PlaceShipGrid grid)
+    {
+        List<int[]> availableMovesList = new List<int[]>();
+
+        for (int x = 0; x < grid.Grid.GetLength(0); x++)
+        {
+            for (int y = 0; y < grid.Grid.GetLength(1); y++)
+            {
+                if (grid.Grid[x, y] == '\0')
+                {
+                    availableMovesList.Add(new int[] { x, y });
+                }
+            }
+        }
+        return availableMovesList.ToArray();
+    }
 // char [,] grid generatedhrid = PlaceShipGrid.Grid
 } 

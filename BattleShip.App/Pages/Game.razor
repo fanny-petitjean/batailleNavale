@@ -1,85 +1,72 @@
-﻿@using BattleShip.App.Service
+﻿@page "/battleship"
 @inject HttpClient Http
 @inject GameState GameState
 
-<h4>Grille du Joueur</h4>
-<table>
-    @for (int i = 0; i < GameState.PlayerGrid.GetLength(0); i++)
-    {
-        <tr>
-            @for (int j = 0; j < GameState.PlayerGrid.GetLength(1); j++)
-            {
-                <td style="padding: 5px; border: 1px solid black;">
-                    @if (GameState.PlayerGrid[i, j] == '\0')
-                    {
-                        <span>.</span> <!-- Case vide -->
-                    }
-                    else
-                    {
-                        <span>@GameState.PlayerGrid[i, j]</span> <!-- Lettre du bateau -->
-                    }
-                </td>
-            }
-        </tr>
-    }
-</table>
+<h3>Bataille Navale</h3>
 
-<h4>Grille de l'Adversaire</h4>
-<table>
-    @for (int i = 0; i < GameState.OpponentGrid.GetLength(0); i++)
-    {
-        <tr>
-            @for (int j = 0; j < GameState.OpponentGrid.GetLength(1); j++)
-            {
-                <td @onclick="(() => MakeAttack(i, j))" style="padding: 5px; border: 1px solid black;">
-                    @if (GameState.OpponentGrid[i, j] == null)
-                    {
-                        <span>.</span> <!-- Case non jouée -->
-                    }
-                    else if (GameState.OpponentGrid[i, j] == true)
-                    {
-                        <img src="hit.png" alt="Touché" /> <!-- Afficher l'image "touché" -->
-                    }
-                    else
-                    {
-                        <img src="miss.png" alt="Raté" /> <!-- Afficher l'image "raté" -->
-                    }
-                </td>
-            }
-        </tr>
-    }
-</table>
+<!-- Bouton pour démarrer une nouvelle partie -->
+<button @onclick="StartNewGame">Démarrer une nouvelle partie</button>
 
-@code {
-    // Méthode pour faire une attaque
-    private async Task MakeAttack(int x, int y)
-    {
-        if (GameState.GameId == null)
-            return;
-
-        var response = await Http.PostAsJsonAsync($"api/battleship/attack", new { GameId = GameState.GameId, X = x, Y = y });
-
-        if (response.IsSuccessStatusCode)
+<!-- Grille du joueur -->
+@if (GameState.PlayerGrid != null)
+{
+    <h4>Grille du Joueur</h4>
+    <table>
+        @for (int i = 0; i < GameState.PlayerGrid.GetLength(0); i++)
         {
-            var result = await response.Content.ReadFromJsonAsync<AttackResponse>();
-
-            GameState.UpdateOpponentGrid(x, y, result.PlayerHit);
-
-            if (result.IAHit)
-            {
-                GameState.PlayerGrid[result.IACoordinates.X, result.IACoordinates.Y] = 'X';
-            }
-            else
-            {
-                GameState.PlayerGrid[result.IACoordinates.X, result.IACoordinates.Y] = 'O';
-            }
+            <tr>
+                @for (int j = 0; j < GameState.PlayerGrid.GetLength(1); j++)
+                {
+                    <td style="padding: 5px; border: 1px solid black; text-align: center;">
+                        @if (GameState.PlayerGrid[i, j] == '\0')
+                        {
+                            <span>.</span> <!-- Case vide -->
+                        }
+                        else if (GameState.PlayerGrid[i, j] == 'X')
+                        {
+                            <img src="hit.png" alt="touché" /> <!-- Bateau touché -->
+                        }
+                        else if (GameState.PlayerGrid[i, j] == 'O')
+                        {
+                            <img src="miss.png" alt="raté" /> <!-- Raté -->
+                        }
+                        else
+                        {
+                            <span>@GameState.PlayerGrid[i, j]</span> <!-- Lettre du bateau -->
+                        }
+                    </td>
+                }
+            </tr>
         }
-    }
+    </table>
+}
 
-    public class AttackResponse
-    {
-        public bool PlayerHit { get; set; }
-        public bool IAHit { get; set; }
-        public (int X, int Y) IACoordinates { get; set; }
-    }
+<!-- Grille de l'adversaire -->
+@if (GameState.OpponentGrid != null)
+{
+    <h4>Grille de l'Adversaire (Secrète)</h4>
+    <table>
+        @for (int i = 0; i < GameState.OpponentGrid.GetLength(0); i++)
+        {
+            <tr>
+                @for (int j = 0; j < GameState.OpponentGrid.GetLength(1); j++)
+                {
+                    <td @onclick="(() => MakeAttack(i, j))" style="padding: 5px; border: 1px solid black; text-align: center; cursor: pointer;">
+                        @if (GameState.OpponentGrid[i, j] == null)
+                        {
+                            <span>.</span> <!-- Case non jouée -->
+                        }
+                        else if (GameState.OpponentGrid[i, j] == true)
+                        {
+                            <img src="hit.png" alt="touché" /> <!-- Touché -->
+                        }
+                        else
+                        {
+                            <img src="miss.png" alt="raté" /> <!-- Raté -->
+                        }
+                    </td>
+                }
+            </tr>
+        }
+    </table>
 }
