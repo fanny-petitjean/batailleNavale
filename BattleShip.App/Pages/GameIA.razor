@@ -5,6 +5,14 @@
 @inject NavigationManager Navigation
 
 <style>
+    .scrollable-container {
+        max-height: 500px; 
+        overflow-y: auto; 
+        border: 1px solid #ccc; 
+        padding: 10px; 
+        background-color: #E2A3AA; 
+    }
+
     body{
         background-color: #E2A3AA;
     }
@@ -41,9 +49,20 @@
     <div>
         <h4>Grille du Joueur</h4>
         <table class="grid">
+            <!-- Ajout des numéros de colonne -->
+            <tr>
+                <td></td> <!-- Case vide pour l'alignement des lettres -->
+                @for (int j = 0; j < GameState.PlayerGrid.GetLength(1); j++)
+                {
+                    <td><b>@j</b></td>
+                }
+            </tr>
+
             @for (int i = 0; i < GameState.PlayerGrid.GetLength(0); i++)
             {
                 <tr>
+                    <!-- Ajout des lettres sur la gauche -->
+                    <td><b>@(Convert.ToChar(65 + i))</b></td> <!-- 65 représente 'A' en ASCII -->
                     @for (int j = 0; j < GameState.PlayerGrid.GetLength(1); j++)
                     {
                         <td>
@@ -74,9 +93,20 @@
     <div>
         <h4>Grille de l'Adversaire</h4>
         <table class="grid">
+            <!-- Ajout des numéros de colonne -->
+            <tr>
+                <td></td> <!-- Case vide pour l'alignement des lettres -->
+                @for (int j = 0; j < GameState.OpponentGrid.GetLength(1); j++)
+                {
+                    <td><b>@j</b></td>
+                }
+            </tr>
+
             @for (int i = 0; i < GameState.OpponentGrid.GetLength(0); i++)
             {
                 <tr>
+                    <!-- Ajout des lettres sur la gauche -->
+                    <td><b>@(Convert.ToChar(65 + i))</b></td> <!-- 65 représente 'A' en ASCII -->
                     @for (int j = 0; j < GameState.OpponentGrid.GetLength(1); j++)
                     {
                         int capturedI = i;
@@ -107,67 +137,144 @@
         </table>
     </div>
     <div>
-        <button @onclick="LoadHistory">Charger l'Historique</button>
+        <button @onclick="UndoLastMove">Annuler</button>
 
-        <ul>
-            @foreach (var move in GameState.Moves)
-            {
-                <li>
-                    Joueur @move.attacker.name a tiré sur (@move.x, @move.y) et a @if (move.isHit)
-                    {
-                        <b>touché</b>
-                    }
-                    else
-                    {
-                        <i>raté</i>
-                    }
-                </li>
-            }
-        </ul>
+        <div class="scrollable-container">
+            <ul>
+                @foreach (var move in Enumerable.Reverse(GameState.Moves))
+                {
+                    <li>
+                        Joueur @move.AttackerName a @if (move.IsHit)
+                        {
+                            <b>touché</b>
+                        }
+                        else
+                        {
+                            <i>raté</i>
+                        } sur (@move.LetterX, @move.Y)
+                    </li>
+                }
+            </ul>
+        </div>
 
     </div>
 </div>
 
-    @code {
-        private async Task MakeAttack(int x, int y)
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadHistory();  
+    }
+    private async Task MakeAttack(int x, int y)
+    {
+        Console.WriteLine   ($"Attaque en {x}, {y}");
+        if (!GameState.IsPlayerTurn) return;
+
+        if (GameState.GameId == null)
+            return;
+
+        var response = await Http.PostAsJsonAsync($"/attack/{GameState.GameId}?x={x}&y={y}", new { });
+
+        if (!response.IsSuccessStatusCode)
         {
-            if (!GameState.IsPlayerTurn) return;
+            return;
+        }
 
-            if (GameState.GameId == null)
-                return;
+        var result = await response.Content.ReadFromJsonAsync<AttackResponse>();
 
-            var response = await Http.PostAsJsonAsync($"/attack/{GameState.GameId}?x={x}&y={y}", new { });
+        GameState.UpdateOpponentGrid(x, y, result.PlayerHit);
 
-            if (!response.IsSuccessStatusCode)
+
+        if (result.GameOver)
+        {
+            GameState.WinnerName = result.Winner;
+            Navigation.NavigateTo("/end");
+        }
+        Console.WriteLine($"Vous avez touché un bateau en {result.IAX}.");
+        if (result.IAHit != '.')
+        {
+            GameState.IsPlayerTurn = false;
+            Console.WriteLine($"L'IA a touché votre bateau en {result.IAX}, {result.IAY}.");
+            GameState.UpdatePlayerGrid(result.IAX, result.IAY, result.IAHit);
+            GameState.IsPlayerTurn = true;
+        }
+        await LoadHistory();
+
+    }
+    private async Task LoadHistory()
+    {
+        if (!string.IsNullOrEmpty(GameState.GameId))
+        {
+            try
             {
-                return;
+                var moves = await Http.GetFromJsonAsync<List<MoveDto>>($"/history/{GameState.GameId}");
+
+                if (moves != null && moves.Any())
+                {
+                    foreach (var move in moves)
+                    {
+                        move.LetterX = Convert.ToChar(65 + move.X).ToString(); 
+                    }
+
+                    GameState.Moves = moves.ToList();
+                }
+                else
+                {
+                    Console.WriteLine("Aucun mouvement trouvé.");
+                    GameState.Moves = new List<MoveDto>();  
+                }
             }
-
-            var result = await response.Content.ReadFromJsonAsync<AttackResponse>();
-
-            GameState.UpdateOpponentGrid(x, y, result.PlayerHit);
-
-
-            if (result.GameOver)
+            catch (Exception ex)
             {
-                GameState.WinnerName = result.Winner;
-                Navigation.NavigateTo("/end");
-            }
-            Console.WriteLine($"Vous avez touché un bateau en {result.IAX}.");
-            if (result.IAHit != '.')
-            {
-                GameState.IsPlayerTurn = false;
-                Console.WriteLine($"L'IA a touché votre bateau en {result.IAX}, {result.IAY}.");
-                GameState.UpdatePlayerGrid(result.IAX, result.IAY, result.IAHit);
-                GameState.IsPlayerTurn = true;
+                Console.WriteLine($"Erreur lors du chargement de l'historique: {ex.Message}");
             }
         }
-        private async Task LoadHistory()
+        else
         {
-            if (!string.IsNullOrEmpty(GameState.GameId))
+            Console.WriteLine("GameId est nul ou vide.");
+        }
+    }
+    private async Task UndoLastMove()
+    {
+        if (GameState.Moves.Any())
+        {
+            var lastMove = GameState.Moves.Last();
+            var response = await Http.PostAsJsonAsync($"/undo/{GameState.GameId}", lastMove); 
+
+            if (response.IsSuccessStatusCode)
             {
+                GameState.Moves.RemoveAt(GameState.Moves.Count - 1); 
+
+                if (lastMove.AttackerName != "ia")
+                {
+                    GameState.UpdateOpponentGrid(lastMove.X, lastMove.Y, null);
+                }
+                else
+                {
+                    GameState.UpdatePlayerGrid(lastMove.X, lastMove.Y, lastMove.PreviousLetter);
+                }
+
+                StateHasChanged(); 
+            }
+            else
+            {
+                Console.WriteLine("Erreur lors de l'annulation du dernier mouvement.");
             }
         }
+    }
+    
+
+    public class MoveDto
+    {
+        public string AttackerName { get; set; }  
+        public int X { get; set; }                
+        public int Y { get; set; }               
+        public bool IsHit { get; set; }           
+        public string LetterX { get; set; }    
+        public char PreviousLetter { get; set; }  
+    }
+
+
 
         public class AttackResponse
         {
@@ -181,6 +288,5 @@
             public int PlayerY { get; set; }
             public string IaId { get; set; }
             public string PlayerId { get; set; }
-
         }
 }

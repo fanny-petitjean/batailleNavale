@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace BattleShip.Models
@@ -15,6 +17,7 @@ namespace BattleShip.Models
             get; set;
         }
         public Player attacker { get; set; }
+        public Player defender { get; set; }
         public Move(int x, int y, bool isHit)
         {
             this.x = x;
@@ -23,13 +26,19 @@ namespace BattleShip.Models
         }
 
         public char previousValue { get; set; }
-        public Move(Player attacker, int x, int y, bool isHit)
+        [JsonConstructor]
+
+        public Move(Player attacker, Player defender, int x, int y, bool isHit, char previousValue)
         {
             this.x = x;
             this.y = y;
             this.attacker = attacker;
+            this.defender = defender;
             this.isHit = isHit;
-            this.previousValue = attacker.placeShipGrid.Grid[x,y];
+            this.previousValue = previousValue;
+            Console.WriteLine("Move created");
+            Console.WriteLine("previous", previousValue);
         }
+     
     }
 }

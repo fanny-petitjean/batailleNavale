@@ -68,11 +68,11 @@ namespace BattleShip.Models
             {
                 Ship ship = defender.placeShipGrid.ships.FirstOrDefault(s => s.letter == letter);
                 ship.RegisterHit();
-                history.AddMove(new Move(attacker, x, y, true));
+                history.AddMove(new Move(attacker,defender, x, y, true, letter));
             }
             else
             {
-                history.AddMove(new Move(attacker, x, y, false));
+                history.AddMove(new Move(attacker,defender, x, y, false, '\0'));
             }
         }
 
@@ -142,7 +142,6 @@ namespace BattleShip.Models
                 }
 
             }
-            Console.WriteLine(newGrid);
             return newGrid;
         }
     }

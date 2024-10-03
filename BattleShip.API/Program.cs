@@ -5,6 +5,7 @@ using BattleShip.App.Service;
 using System;
 using System.Collections.Generic;
 using BattleShip.API;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 var gameService = new GameService();
@@ -81,7 +82,6 @@ app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int
     var game = gameService.GetGame(gameId);
     if (game == null)
     {
-        Console.WriteLine("Jeu non trouvé pour l'ID : " + gameId);
         return Results.NotFound("Game not found");
     }
 
@@ -110,11 +110,9 @@ app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int
 
     if (game.history.LastMoveName()=="ia")
     {
-        Console.WriteLine("Dernier coup joué par l'IA");
         IAH = game.history.LastMove().isHit ? 'X' : 'O';
         iaX = game.history.LastMove().x;
         iaY = game.history.LastMove().y;
-        Console.WriteLine($"Dernier coup joué par l'IA : {iaX}, {iaY}");
         gameOver = game.checkWinner();
         winner = game.winner?.name;
         moveIa = game.history.LastMove();
@@ -124,7 +122,6 @@ app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int
         x = move1.x;
         y = move1.y;
         playerId = move1.attacker.id.ToString();
-
     }
 
 
@@ -143,11 +140,76 @@ var response = new
 
     };
 
-    Console.WriteLine("Réponse de l'attaque : " + response);
-    Console.WriteLine($"Sortie de la méthode /attack avec gameId: {gameId}.");
-
     return Results.Ok(response);
 });
+
+app.MapGet("/history/{gameId}", (Guid gameId) =>
+{
+    var game = gameService.GetGame(gameId);
+
+    if (game == null)
+    {
+        Console.WriteLine($"Game with ID {gameId} not found.");
+        return Results.NotFound("Game not found");
+    }
+
+    var moves = game.history.GetMoves();
+    if (moves == null || !moves.Any())
+    {
+        Console.WriteLine($"No moves found for game with ID {gameId}");
+        return Results.Ok(new List<Move>());
+    }
+    var history = moves.Select(m => new
+    {
+        AttackerName = m.attacker?.name ?? "Inconnu",  // Si `attacker` est null, renvoie "Inconnu"
+        X = m.x,
+        Y = m.y,
+        IsHit = m.isHit,
+        PreviousLetter= m.previousValue
+    }).ToList();
+
+
+   // Console.WriteLine($"history : {JsonSerializer.Serialize(history)}");
+
+    return Results.Ok(history);
+});
+
+app.MapPost("/undo/{gameId}", (Guid gameId) =>
+{
+
+    var game = gameService.GetGame(gameId);
+ 
+    if (game == null)
+    {
+        return Results.NotFound("Game not found");
+    }
+
+    var lstMove = game.history.LastMove();
+    var x = lstMove.x;
+    var y = lstMove.y;
+    var previousValue = lstMove.previousValue.ToString();
+    Console.WriteLine($"x:  {x} et y : {y} ");
+    Console.WriteLine($"previous : {previousValue}");
+    var success = game.history.RemoveMove();
+    lstMove = game.history.LastMove();
+    x = lstMove.x;
+    y = lstMove.y;
+    previousValue = lstMove.previousValue.ToString();
+    Console.WriteLine($" AFTER x:  {x} et y : {y} ");
+    Console.WriteLine($"AFTER previous : {previousValue}");
+
+    if (!success)
+    {
+        return Results.BadRequest("No moves to undo");
+    }
+
+    return Results.Ok();
+});
+
+
+
+
+
 
 
 app.Run();

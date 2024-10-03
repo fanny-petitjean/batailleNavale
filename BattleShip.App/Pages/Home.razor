@@ -33,7 +33,6 @@
 
             GameState.GameId = gameData.GameId;
 
-
             char[,] playerGrid = GameState.ConvertListToCharArray(gameData.PlayerGrid);
             bool?[,] opponentGrid = GameState.ConvertListToBoolArray(gameData.OpponentGrid);
             GameState.InitializePlayerGrid(playerGrid);

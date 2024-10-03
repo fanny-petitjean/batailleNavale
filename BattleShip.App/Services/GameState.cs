@@ -1,5 +1,6 @@
 using BattleShip.Models;
 using System.Net.Http.Json;
+using static BattleShip.App.Pages.GameIA;
 
 namespace BattleShip.App.Service;
 
@@ -10,15 +11,25 @@ public class GameState
     public string GameId { get; set; }
     public bool IsPlayerTurn { get; set; } 
     public string WinnerName { get; set; }
-    public List<Move> Moves { get; set; } = new List<Move>();
+    public List<MoveDto> Moves { get; set; } = new List<MoveDto>();
+    public void AddMove(MoveDto move)
+    {
+        Moves.Add(move);
+    }
 
+    public bool RemoveMove(MoveDto move)
+    {
+        return Moves.Remove(move);
+    }
 
 
     public void InitializeNewGame(char[,] playerGrid, string gameId)
     {
         PlayerGrid = playerGrid;
         OpponentGrid = new bool?[10, 10];  // Grille de l'adversaire masquée
+
         GameId = gameId;
+        Console.WriteLine("GameId test: " + GameId);
     }
     public void InitializePlayerGrid(char[,] grid)
     {
@@ -29,17 +40,7 @@ public class GameState
         OpponentGrid = grid;
     }
 
-    public void AddMove(Move move)
-    {
-        Moves.Add(move);
-    }
-
-    public bool RemoveMove(Move move)
-    {
-        return Moves.Remove(move);
-    }
-
-    public void UpdateOpponentGrid(int x, int y, bool hit)
+    public void UpdateOpponentGrid(int x, int y, bool? hit)
     {
         OpponentGrid[x, y] = hit;  // Mise à jour de la grille avec touché ou raté
     }
