@@ -1,0 +1,343 @@
+﻿@page "/chooseShip/{gamingType}"
+@using System.Linq
+@using BattleShip.App.Service
+@using BattleShip.Models
+@inject HttpClient Http
+@inject GameState GameState
+@inject NavigationManager Navigation
+
+<style>
+    body {
+        background-color: #E2A3AA;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .grid-container {
+        display: grid;
+        grid-template-columns: 40px repeat(@(GridSize), 40px);
+        grid-template-rows: 40px repeat(@(GridSize), 40px); 
+        gap: 1px;
+        justify-content: center;
+        margin-right: 20px;
+    }
+
+    .grid-cell, .header-cell {
+        width: 40px;
+        height: 40px;
+        background-color: white;
+        border: 1px solid black;
+        text-align: center;
+        line-height: 40px;
+        cursor: pointer;
+    }
+
+        .grid-cell.ship {
+            background-color: #663e43;
+            color: white;
+        }
+
+        .grid-cell.highlight {
+            background-color: lightgray;
+        }
+
+    .header-cell {
+        background-color: #f0f0f0; /* Couleur de fond pour les en-têtes */
+        font-weight: bold;
+    }
+
+    .menu-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+        .menu-container h4 {
+            margin-top: 0;
+        }
+</style>
+
+<h3>Placez vos bateaux</h3>
+
+<div style="display: flex;">
+    <!-- Grille de Bateaux -->
+    <div class="grid-container">
+        <!-- Première ligne vide pour aligner les chiffres -->
+        <div class="header-cell"></div> <!-- Case vide en haut à gauche -->
+        @for (int j = 0; j < GridSize; j++)
+        {
+            <div class="header-cell">@j</div> <!-- Chiffres en haut -->
+        }
+
+        @for (int i = 0; i < GridSize; i++)
+        {
+            <!-- Ajouter les lettres sur les côtés -->
+            <div class="header-cell">@Convert.ToChar(65 + i)</div> <!-- Lettres à gauche -->
+            @for (int j = 0; j < GridSize; j++)
+            {
+                int capturedI = i;
+                int capturedJ = j;
+
+                <div class="grid-cell @(PlayerGrid[i, j] != '\0' ? "ship" : HighlightedCells.Contains((i, j)) ? "highlight" : "")"
+                     @onclick="() => SelectCell(capturedI, capturedJ)">
+                    @if (PlayerGrid[i, j] != '\0')
+                    {
+                        <span>@(PlayerGrid[i, j])</span>
+                    }
+                </div>
+            }
+        }
+    </div>
+
+    <!-- Conteneur des Menus -->
+    <div class="menu-container">
+        <h4>Sélection du bateau</h4>
+        <select @bind="SelectedShipLength">
+            @foreach (var ship in AvailableShips)
+            {
+                <option value="@ship.Length">@($"Bateau (Taille: {ship.Length})")</option>
+            }
+        </select>
+
+        <label>
+            <input type="checkbox" @bind="IsHorizontal" />
+            Horizontal
+        </label>
+
+        <button @onclick="PlaceShip">Placer le bateau</button>
+
+        <h4>Choisissez la taille de la grille</h4>
+        <select id="grid-size" @bind:get="GridSize" @bind:set="OnGridSizeChanged">
+            @for (int size = 5; size <= 15; size++)
+            {
+                <option value="@size">@size x @size</option>
+            }
+        </select>
+
+        <div>
+            @if (IsAllShipsPlaced)
+            {
+                <button @onclick="StartGame">Commencer le jeu</button>
+            }
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public string gamingType { get; set; }
+    private int GridSize = 10;
+    private char[,] PlayerGrid = new char[10, 10];
+    private List<Ship> AvailableShips = new List<Ship> {
+        new Ship { Length = 1 },
+        new Ship { Length = 2 },
+        new Ship { Length = 2 },
+        new Ship { Length = 3 },
+        new Ship { Length = 4 },
+        new Ship { Length = 4 }
+    };
+    private int SelectedShipLength = 1;
+    private bool IsHorizontal = true;
+    private List<Ship> PlacedShips = new List<Ship>();
+    private bool IsAllShipsPlaced = false;
+
+    private int? SelectedX = null;
+    private int? SelectedY = null;
+
+    private HashSet<(int, int)> HighlightedCells = new HashSet<(int, int)>();
+
+    private void OnGridSizeChanged(int newSize)
+    {
+        GridSize = newSize;
+        InitializeGrid(GridSize);
+        ResetAvailableShips();
+        StateHasChanged();
+    }
+
+    private void ResetAvailableShips()
+    {
+        AvailableShips = new List<Ship> {
+        new Ship { Length = 1 },
+        new Ship { Length = 2 },
+        new Ship { Length = 2 },
+        new Ship { Length = 3 },
+        new Ship { Length = 4 },
+        new Ship { Length = 4 }
+    };
+
+        SelectedShipLength = AvailableShips.First().Length;
+        IsAllShipsPlaced = false;
+    }
+
+    private void InitializeGrid(int gridSize)
+    {
+        PlayerGrid = new char[gridSize, gridSize];
+        for (int i = 0; i < gridSize; i++)
+        {
+            for (int j = 0; j < gridSize; j++)
+            {
+                PlayerGrid[i, j] = '\0';
+            }
+        }
+        PlacedShips.Clear();
+        IsAllShipsPlaced = false;
+    }
+
+    private void SelectCell(int x, int y)
+    {
+        SelectedX = x;
+        SelectedY = y;
+
+        UpdateHighlightedCells(x, y);
+
+        StateHasChanged();
+    }
+
+    private void UpdateHighlightedCells(int startX, int startY)
+    {
+        HighlightedCells.Clear();
+
+        if (CanPlaceShip(startX, startY, SelectedShipLength, IsHorizontal))
+        {
+            for (int i = 0; i < SelectedShipLength; i++)
+            {
+                int posX = startX + (IsHorizontal ? 0 : i);
+                int posY = startY + (IsHorizontal ? i : 0);
+                HighlightedCells.Add((posX, posY));
+            }
+        }
+    }
+    private void PlaceShip()
+    {
+        if (IsAllShipsPlaced)
+        {
+            Console.WriteLine("Tous les bateaux sont déjà placés.");
+            return;
+        }
+
+        if (SelectedX == null || SelectedY == null)
+        {
+            Console.WriteLine("Veuillez sélectionner une case sur la grille.");
+            return;
+        }
+
+        int x = SelectedX.Value;
+        int y = SelectedY.Value;
+
+        if (CanPlaceShip(x, y, SelectedShipLength, IsHorizontal))
+        {
+            char shipLetter = (char)('A' + PlacedShips.Count);
+            for (int i = 0; i < SelectedShipLength; i++)
+            {
+                int posX = x + (IsHorizontal ? 0 : i);
+                int posY = y + (IsHorizontal ? i : 0);
+                PlayerGrid[posX, posY] = shipLetter;
+            }
+
+            PlacedShips.Add(new Ship
+                {
+                    Length = SelectedShipLength,
+                    IsHorizontal = IsHorizontal,
+                    StartX = x,
+                    StartY = y,
+                    Letter = shipLetter
+                });
+
+            var shipToRemove = AvailableShips.FirstOrDefault(s => s.Length == SelectedShipLength);
+            if (shipToRemove != null)
+            {
+                AvailableShips.Remove(shipToRemove);
+                if (!AvailableShips.Any())
+                {
+                    IsAllShipsPlaced = true;
+                    Console.WriteLine("Tous les bateaux ont été placés.");
+                }
+            }
+
+            SelectedShipLength = AvailableShips.FirstOrDefault()?.Length ?? 1;
+            SelectedX = null;
+            SelectedY = null;
+            HighlightedCells.Clear();
+        }
+        else
+        {
+            Console.WriteLine("Impossible de placer le bateau ici.");
+        }
+
+        StateHasChanged();
+    }
+
+    private bool CanPlaceShip(int x, int y, int length, bool isHorizontal)
+    {
+        if (isHorizontal)
+        {
+            if (y + length > GridSize)
+                return false;
+        }
+        else
+        {
+            if (x + length > GridSize)
+                return false;
+        }
+
+        for (int i = 0; i < length; i++)
+        {
+            int posX = x + (isHorizontal ? 0 : i);
+            int posY = y + (isHorizontal ? i : 0);
+
+            if (PlayerGrid[posX, posY] != '\0')
+                return false;
+        }
+
+        return true;
+    }
+
+    private async Task StartGame()
+    {
+        Console.WriteLine("Démarrage de la partie...");
+        var list = GameState.ConvertCharArrayToList(PlayerGrid);
+
+        var gridSize = GridSize;
+
+        var response = await Http.PostAsJsonAsync($"/newGame/{gamingType}", list);
+
+        if (response.IsSuccessStatusCode)
+        {
+
+            var gameData  = await response.Content.ReadFromJsonAsync<NewGameResponse>();
+            GameState.GameId = gameData.GameId;
+
+
+            char[,] playerGrid = GameState.ConvertListToCharArray(gameData.PlayerGrid);
+            bool?[,] opponentGrid = GameState.ConvertListToBoolArray(gameData.OpponentGrid);
+            GameState.InitializePlayerGrid(playerGrid);
+            GameState.InitializeOpponentGrid(opponentGrid);
+            GameState.IsPlayerTurn = true;
+            Navigation.NavigateTo("/gameIA");
+        }
+        else
+        {
+            Console.WriteLine("Erreur lors de la création de la partie : " + await response.Content.ReadAsStringAsync());
+        }
+    }
+
+    public class Ship
+    {
+        public int Length { get; set; }
+        public bool IsHorizontal { get; set; }
+        public int StartX { get; set; }
+        public int StartY { get; set; }
+        public char Letter { get; set; }
+    }
+
+    public class NewGameResponse
+    {
+        public string GameId { get; set; }
+        public string Player { get; set; }
+        public string Opponent { get; set; }
+        public List<List<char>> PlayerGrid { get; set; }
+        public List<List<bool?>> OpponentGrid { get; set; }
+    }
+}

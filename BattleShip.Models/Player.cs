@@ -11,13 +11,32 @@ namespace BattleShip.Models
 
         public Player(string name, bool isIa)
         {
-            char[,] grid = new char[10, 10];
             this.id = Guid.NewGuid();
             this.name = name;
-    
+
             this.placeShipGrid = new PlaceShipGrid();
             this.isIa = isIa;
 
         }
+        public Player(string name, bool isIa, int gridSize)
+        {
+            this.id = Guid.NewGuid();
+            this.name = name;
+
+            this.placeShipGrid = new PlaceShipGrid(gridSize);
+            this.isIa = isIa;
+
+        }
+
+        public Player(string name, bool isIa, PlaceShipGrid placeShipGrid)
+        {
+            this.id = Guid.NewGuid();
+            this.name = name;
+
+            this.placeShipGrid = placeShipGrid;
+            this.isIa = isIa;
+
+        }
     }
+        
 }

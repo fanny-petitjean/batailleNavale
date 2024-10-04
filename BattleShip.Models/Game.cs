@@ -120,7 +120,8 @@ namespace BattleShip.Models
 
         public bool?[,] displayOpponentGrid(PlaceShipGrid grid)
         {
-            var newGrid = new bool?[10,10];
+            var gridSize = grid.Grid.GetLength(0);
+            var newGrid = new bool?[gridSize,gridSize];
 
             for (int x = 0; x < grid.Grid.GetLength(0); x++)
             {

@@ -29,12 +29,14 @@
 
     .grid-container {
         display: flex;
-        justify-content: space-around; /* Sépare uniformément les deux grilles */
-        gap: 20px; /* Espace entre les grilles */
+        grid-template-columns: 40px repeat(@(GridSize), 40px);
+        grid-template-rows: 40px repeat(@(GridSize), 40px);
+        justify-content: space-around;
+        gap: 20px; 
     }
 
     .grid {
-        border-collapse: collapse; /* Pour un style de grille propre */
+        border-collapse: collapse;
         background-color: white;
     }
 
@@ -45,13 +47,11 @@
 </style>
 
 <div class="grid-container">
-    <!-- Grille du Joueur -->
     <div>
         <h4>Grille du Joueur</h4>
         <table class="grid">
-            <!-- Ajout des numéros de colonne -->
             <tr>
-                <td></td> <!-- Case vide pour l'alignement des lettres -->
+                <td></td> 
                 @for (int j = 0; j < GameState.PlayerGrid.GetLength(1); j++)
                 {
                     <td><b>@j</b></td>
@@ -61,8 +61,7 @@
             @for (int i = 0; i < GameState.PlayerGrid.GetLength(0); i++)
             {
                 <tr>
-                    <!-- Ajout des lettres sur la gauche -->
-                    <td><b>@(Convert.ToChar(65 + i))</b></td> <!-- 65 représente 'A' en ASCII -->
+                    <td><b>@(Convert.ToChar(65 + i))</b></td>
                     @for (int j = 0; j < GameState.PlayerGrid.GetLength(1); j++)
                     {
                         <td>
@@ -89,13 +88,11 @@
         </table>
     </div>
 
-    <!-- Grille de l'Adversaire -->
     <div>
         <h4>Grille de l'Adversaire</h4>
         <table class="grid">
-            <!-- Ajout des numéros de colonne -->
             <tr>
-                <td></td> <!-- Case vide pour l'alignement des lettres -->
+                <td></td>
                 @for (int j = 0; j < GameState.OpponentGrid.GetLength(1); j++)
                 {
                     <td><b>@j</b></td>
@@ -105,8 +102,8 @@
             @for (int i = 0; i < GameState.OpponentGrid.GetLength(0); i++)
             {
                 <tr>
-                    <!-- Ajout des lettres sur la gauche -->
-                    <td><b>@(Convert.ToChar(65 + i))</b></td> <!-- 65 représente 'A' en ASCII -->
+
+                    <td><b>@(Convert.ToChar(65 + i))</b></td> 
                     @for (int j = 0; j < GameState.OpponentGrid.GetLength(1); j++)
                     {
                         int capturedI = i;
@@ -161,12 +158,16 @@
 </div>
 
 @code {
+    private int GridSize = 10;
     protected override async Task OnInitializedAsync()
     {
+        GridSize = GameState.PlayerGrid.GetLength(0);
         await LoadHistory();  
     }
     private async Task MakeAttack(int x, int y)
     {
+        GridSize = GameState.PlayerGrid.GetLength(0);
+
         Console.WriteLine   ($"Attaque en {x}, {y}");
         if (!GameState.IsPlayerTurn) return;
 

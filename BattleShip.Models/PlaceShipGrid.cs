@@ -3,7 +3,7 @@ namespace BattleShip.Models
 {
     public class PlaceShipGrid
     {
-        private const int GridSize = 10;
+        private int GridSize { get; set; }
         private const char EmptyCell = '\0';
         public List<Ship> ships = new List<Ship>
     {
@@ -18,9 +18,24 @@ namespace BattleShip.Models
         public char[,] Grid { get; private set; }
         public PlaceShipGrid()
         {
+
+            GridSize = 10;
             Grid = new char[GridSize, GridSize];
             InitializeGrid();
             PlaceAllShips();
+        }
+        public PlaceShipGrid(int gridSize)
+        {
+
+            GridSize = gridSize;
+            Grid = new char[GridSize, GridSize];
+            InitializeGrid();
+            PlaceAllShips();
+        }
+        public PlaceShipGrid(int gridSize, char[,] grid)
+        {
+            GridSize = gridSize;
+            Grid = grid;
         }
         private void InitializeGrid()
         {

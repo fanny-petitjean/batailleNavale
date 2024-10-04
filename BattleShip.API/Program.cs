@@ -52,18 +52,27 @@ if (app.Environment.IsDevelopment())
 }
 var converter = new Converter();
 
-app.MapPost("/newGame", () =>
+app.MapPost("/newGame/{gameType}", async ([FromRoute] string gameType, [FromBody] List<List<char>> gridRequest) =>
 {
-    var player = new Player("Player 1", false);
-    var ia = new Player("ia", true);
+    Console.WriteLine($"gameType : {gameType}");
+    var grid = converter.ConvertListToCharArray(gridRequest);
+    var gridSize = grid.GetLength(0);
+    var placeGrid = new PlaceShipGrid(gridSize, grid);
+    var player = new Player("Player 1", false, placeGrid);
+    var ia = new Player("ia", true, gridSize);
 
+    Console.WriteLine($"gridSize : {gridSize}");
     var players = new List<Player> { player, ia };
+    Console.WriteLine($"players : {players.Count}");
     var game = new Game(players, 0);
+    Console.WriteLine($"game : {game.players.Count}");
 
     Guid guid = gameService.AddGame(game);
-
+    Console.WriteLine($"guid : {guid}");
     var PlayerGrid = converter.ConvertCharArrayToList(player.placeShipGrid.Grid);
+    Console.WriteLine($"PlayerGrid : {PlayerGrid.Count}");
     var OpponentGrid = converter.ConvertBoolArrayToList(game.displayOpponentGrid(ia.placeShipGrid));
+    Console.WriteLine($"OpponentGrid : {OpponentGrid.Count}");
     var response = new
     {
         GameId = guid.ToString(),
@@ -143,6 +152,7 @@ var response = new
     return Results.Ok(response);
 });
 
+
 app.MapGet("/history/{gameId}", (Guid gameId) =>
 {
     var game = gameService.GetGame(gameId);
@@ -205,11 +215,6 @@ app.MapPost("/undo/{gameId}", (Guid gameId) =>
 
     return Results.Ok();
 });
-
-
-
-
-
 
 
 app.Run();

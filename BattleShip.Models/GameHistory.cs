@@ -45,8 +45,8 @@
         }
         public Move SecondLastMove()
         {
-            if (moves.Count < 2) return null; // Vérifie qu'il y a au moins deux coups
-            return moves[moves.Count - 2]; // Retourne l'avant-dernier coup
+            if (moves.Count < 2) return null;
+            return moves[moves.Count - 2]; 
         }
 
         public List<Move> GetMoves()

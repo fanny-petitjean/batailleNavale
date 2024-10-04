@@ -6,11 +6,12 @@ namespace BattleShip.App.Service;
 
 public class GameState
 {
-    public char[,] PlayerGrid { get; private set; } = new char[10, 10];
-    public bool?[,] OpponentGrid { get; private set; } = new bool?[10, 10];
+    public char[,] PlayerGrid { get; private set; }
+    public bool?[,] OpponentGrid { get; private set; } 
     public string GameId { get; set; }
     public bool IsPlayerTurn { get; set; } 
     public string WinnerName { get; set; }
+    public int GridSize { get; set; }
     public List<MoveDto> Moves { get; set; } = new List<MoveDto>();
     public void AddMove(MoveDto move)
     {
@@ -23,10 +24,11 @@ public class GameState
     }
 
 
-    public void InitializeNewGame(char[,] playerGrid, string gameId)
+    public void InitializeNewGame(char[,] playerGrid, string gameId, int gridSize)
     {
+        GridSize = gridSize;
         PlayerGrid = playerGrid;
-        OpponentGrid = new bool?[10, 10];  // Grille de l'adversaire masquée
+        OpponentGrid = new bool?[gridSize, gridSize]; 
 
         GameId = gameId;
         Console.WriteLine("GameId test: " + GameId);
@@ -42,7 +44,7 @@ public class GameState
 
     public void UpdateOpponentGrid(int x, int y, bool? hit)
     {
-        OpponentGrid[x, y] = hit;  // Mise à jour de la grille avec touché ou raté
+        OpponentGrid[x, y] = hit;  
     }
 
     public void UpdatePlayerGrid(int x, int y, char isHit)
@@ -110,6 +112,23 @@ public class GameState
 
         return array; 
     }
+    public List<List<char>> ConvertCharArrayToList(char[,] array)
+    {
+        var list = new List<List<char>>();
+        int rows = array.GetLength(0); 
+        int cols = array.GetLength(1); 
 
+        for (int i = 0; i < rows; i++)
+        {
+            var rowList = new List<char>(); 
+            for (int j = 0; j < cols; j++)
+            {
+                rowList.Add(array[i, j]); 
+            }
+            list.Add(rowList); 
+        }
+
+        return list; 
+    }
 
 }

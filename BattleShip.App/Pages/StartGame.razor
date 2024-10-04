@@ -24,46 +24,13 @@
     private string DebugMessage { get; set; } 
     private async Task StartNewGameIA()
     {
-       
-        var response = await Http.PostAsJsonAsync("/newGame", new { });
-        if (response.IsSuccessStatusCode)
-        {
-            var gameData = await response.Content.ReadFromJsonAsync<NewGameResponse>();
-
-            GameState.GameId = gameData.GameId;
-
-
-            char[,] playerGrid = GameState.ConvertListToCharArray(gameData.PlayerGrid);
-            bool?[,] opponentGrid = GameState.ConvertListToBoolArray(gameData.OpponentGrid);
-            GameState.InitializePlayerGrid(playerGrid);
-            GameState.InitializeOpponentGrid(opponentGrid);
-            GameState.IsPlayerTurn = true;
-            Navigation.NavigateTo("/gameIA");
-
-        }
-        else
-        {
-            DebugMessage = "Erreur lors du démarrage de la nouvelle partie.";
-            Console.Error.WriteLine(DebugMessage);
-        }
+         Navigation.NavigateTo("/chooseShip/ia");
 
     }
 
     private async Task StartNewGamePlayer()
     {
-        DebugMessage = "Fonctionnalité StartNewGamePlayer non encore implémentée.";
-        Console.WriteLine(DebugMessage);
-
-        DebugMessage += "\nSortie de StartNewGamePlayer.";
-        Console.WriteLine(DebugMessage);
+        Navigation.NavigateTo("/chooseShip/player");
     }
 
-    public class NewGameResponse
-    {
-        public string GameId { get; set; }     
-        public string Player { get; set; }     
-        public string Opponent { get; set; }    
-        public List<List<char>> PlayerGrid { get; set; }    
-        public List<List<bool?>> OpponentGrid { get; set; }
-    }
 }

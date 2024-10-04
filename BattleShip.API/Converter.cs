@@ -5,52 +5,62 @@
 
     public class Converter
     {
-        /// <summary>
-        /// Convertit un tableau multidimensionnel de caractères en une liste de listes de caractères.
-        /// </summary>
-        /// <param name="array">Le tableau de caractères à convertir.</param>
-        /// <returns>Une liste de listes de caractères.</returns>
+ 
         public List<List<char>> ConvertCharArrayToList(char[,] array)
         {
             var list = new List<List<char>>();
-            int rows = array.GetLength(0); // Nombre de lignes
-            int cols = array.GetLength(1); // Nombre de colonnes
+            int rows = array.GetLength(0); 
+            int cols = array.GetLength(1);
 
             for (int i = 0; i < rows; i++)
             {
-                var rowList = new List<char>(); // Nouvelle liste pour chaque ligne
+                var rowList = new List<char>(); 
                 for (int j = 0; j < cols; j++)
                 {
-                    rowList.Add(array[i, j]); // Ajouter l'élément à la liste de la ligne
+                    rowList.Add(array[i, j]);
                 }
-                list.Add(rowList); // Ajouter la liste de la ligne à la liste principale
+                list.Add(rowList);
             }
 
-            return list; // Retourner la liste de listes
+            return list; 
         }
 
-        /// <summary>
-        /// Convertit un tableau multidimensionnel de booléens nullable en une liste de listes de booléens nullable.
-        /// </summary>
-        /// <param name="array">Le tableau de booléens nullable à convertir.</param>
-        /// <returns>Une liste de listes de booléens nullable.</returns>
         public List<List<bool?>> ConvertBoolArrayToList(bool?[,] array)
         {
             var list = new List<List<bool?>>();
-            int rows = array.GetLength(0); // Nombre de lignes
-            int cols = array.GetLength(1); // Nombre de colonnes
+            int rows = array.GetLength(0); 
+            int cols = array.GetLength(1);
 
             for (int i = 0; i < rows; i++)
             {
-                var rowList = new List<bool?>(); // Nouvelle liste pour chaque ligne
+                var rowList = new List<bool?>(); 
                 for (int j = 0; j < cols; j++)
                 {
-                    rowList.Add(array[i, j]); // Ajouter l'élément à la liste de la ligne
+                    rowList.Add(array[i, j]); 
                 }
-                list.Add(rowList); // Ajouter la liste de la ligne à la liste principale
+                list.Add(rowList); 
             }
 
-            return list; // Retourner la liste de listes
+            return list; 
+        }
+        public char[,] ConvertListToCharArray(List<List<char>> list)
+        {
+            if (list == null || list.Count == 0)
+                return new char[0, 0];
+
+            int rows = list.Count;
+            int cols = list[0].Count;
+            char[,] array = new char[rows, cols];
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    array[i, j] = list[i][j];
+                }
+            }
+
+            return array;
         }
     }
 
