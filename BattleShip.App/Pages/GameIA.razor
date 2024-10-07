@@ -3,139 +3,176 @@
 @inject HttpClient Http
 @inject GameState GameState
 @inject NavigationManager Navigation
+@using System.Text.Json;
 
 <style>
-    .scrollable-container {
-        max-height: 500px; 
-        overflow-y: auto; 
-        border: 1px solid #ccc; 
-        padding: 10px; 
-        background-color: #E2A3AA; 
-    }
-
-    body{
+    body {
         background-color: #E2A3AA;
-    }
-    .grid-image {
-        width: 100%;
-        height: auto;
-        max-width: 20px;
-    }
-
-    td {
-        text-align: center;
-        min-width: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
     }
 
     .grid-container {
         display: flex;
-        grid-template-columns: 40px repeat(@(GridSize), 40px);
-        grid-template-rows: 40px repeat(@(GridSize), 40px);
-        justify-content: space-around;
-        gap: 20px; 
+        justify-content: space-between;
+        margin: 20px; /* Ajout d'une marge pour le conteneur principal */
     }
 
     .grid {
-        border-collapse: collapse;
-        background-color: white;
+        display: table;
+        border-collapse: collapse; /* Élimine l'espace entre les cellules */
+        margin-right: 20px;
     }
 
-        .grid td {
-            padding: 5px;
-            border: 1px solid black;
+    .grid-cell, .header-cell {
+        width: 40px;
+        height: 40px;
+        background-color: white;
+        border: 1px solid black;
+        text-align: center;
+        vertical-align: middle;
+        padding: 0; /* Supprime tout padding */
+        margin: 0; /* Supprime toute marge */
+    }
+
+        .grid-cell img {
+            width: 100%;
+            height: 100%;
+            display: block; /* Supprime les espaces sous l'image */
+            object-fit: cover; /* L'image doit couvrir entièrement la cellule */
+            margin: 0; /* Supprime toute marge indésirable */
+            padding: 0; /* Supprime tout padding */
         }
+
+        .grid-cell.ship {
+            background-color: #663e43;
+            color: white;
+        }
+
+        .grid-cell.highlight {
+            background-color: lightgray;
+        }
+
+    .header-cell {
+        background-color: #f0f0f0;
+        font-weight: bold;
+    }
+
+    .menu-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+        .menu-container h4 {
+            margin-top: 0;
+        }
+
+    .scrollable-container {
+        max-height: 500px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
+        background-color: #E2A3AA;
+    }
 </style>
 
 <div class="grid-container">
     <div>
         <h4>Grille du Joueur</h4>
         <table class="grid">
-            <tr>
-                <td></td> 
-                @for (int j = 0; j < GameState.PlayerGrid.GetLength(1); j++)
-                {
-                    <td><b>@j</b></td>
-                }
-            </tr>
-
-            @for (int i = 0; i < GameState.PlayerGrid.GetLength(0); i++)
-            {
+            <thead>
                 <tr>
-                    <td><b>@(Convert.ToChar(65 + i))</b></td>
+                    <th class="header-cell"></th>
                     @for (int j = 0; j < GameState.PlayerGrid.GetLength(1); j++)
                     {
-                        <td>
-                            @if (GameState.PlayerGrid[i, j] == '\0')
-                            {
-                                <span>.</span>
-                            }
-                            else if (GameState.PlayerGrid[i, j] == 'X')
-                            {
-                                <img src="images/hit.png" alt="Touché" class="grid-image" />
-                            }
-                            else if (GameState.PlayerGrid[i, j] == 'O')
-                            {
-                                <img src="images/miss.jpeg" alt="Raté" class="grid-image" />
-                            }
-                            else
-                            {
-                                <span>@GameState.PlayerGrid[i, j]</span>
-                            }
-                        </td>
+                        <th class="header-cell"><b>@j</b></th>
                     }
                 </tr>
-            }
+            </thead>
+            <tbody>
+                @for (int i = 0; i < GameState.PlayerGrid.GetLength(0); i++)
+                {
+                    <tr>
+                        <td class="header-cell"><b>@(Convert.ToChar(65 + i))</b></td>
+                        @for (int j = 0; j < GameState.PlayerGrid.GetLength(1); j++)
+                        {
+                            <td class="grid-cell">
+                                @if (GameState.PlayerGrid[i, j] == '\0')
+                                {
+                                    <span>.</span>
+                                }
+                                else if (GameState.PlayerGrid[i, j] == 'X')
+                                {
+                                    <img src="images/hit.png" alt="Touché" class="grid-image" />
+                                }
+                                else if (GameState.PlayerGrid[i, j] == 'O')
+                                {
+                                    <img src="images/miss.jpeg" alt="Raté" class="grid-image" />
+                                }
+                                else
+                                {
+                                    <img src="@GameState.PlayerGridImages[i, j]" alt="Bateau" class="grid-image" />
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
         </table>
     </div>
 
     <div>
         <h4>Grille de l'Adversaire</h4>
         <table class="grid">
-            <tr>
-                <td></td>
-                @for (int j = 0; j < GameState.OpponentGrid.GetLength(1); j++)
-                {
-                    <td><b>@j</b></td>
-                }
-            </tr>
-
-            @for (int i = 0; i < GameState.OpponentGrid.GetLength(0); i++)
-            {
+            <thead>
                 <tr>
-
-                    <td><b>@(Convert.ToChar(65 + i))</b></td> 
+                    <th class="header-cell"></th>
                     @for (int j = 0; j < GameState.OpponentGrid.GetLength(1); j++)
                     {
-                        int capturedI = i;
-                        int capturedJ = j;
-
-                        @if (GameState.OpponentGrid[i, j] == null)
-                        {
-                            <td @onclick="@(() => GameState.IsPlayerTurn ? MakeAttack(capturedI, capturedJ) : null)" style="cursor: pointer;">
-                                <span id="@i-@j">.</span>
-                            </td>
-                        }
-                        else
-                        {
-                            <td>
-                                @if (GameState.OpponentGrid[i, j] == true)
-                                {
-                                    <img src="images/hit.png" alt="Touché" class="grid-image" />
-                                }
-                                else
-                                {
-                                    <img src="images/miss.jpeg" alt="Raté" class="grid-image" />
-                                }
-                            </td>
-                        }
+                        <th class="header-cell"><b>@j</b></th>
                     }
                 </tr>
-            }
+            </thead>
+            <tbody>
+                @for (int i = 0; i < GameState.OpponentGrid.GetLength(0); i++)
+                {
+                    <tr>
+                        <td class="header-cell"><b>@(Convert.ToChar(65 + i))</b></td>
+                        @for (int j = 0; j < GameState.OpponentGrid.GetLength(1); j++)
+                        {
+                            int capturedI = i;
+                            int capturedJ = j;
+
+                            @if (GameState.OpponentGrid[i, j] == null)
+                            {
+                                <td @onclick="@(() => GameState.IsPlayerTurn ? MakeAttack(capturedI, capturedJ) : null)" style="cursor: pointer;" class="grid-cell">
+                                    <span id="@i-@j">.</span>
+                                </td>
+                            }
+                            else
+                            {
+                                <td class="grid-cell">
+                                    @if (GameState.OpponentGrid[i, j] == true)
+                                    {
+                                        <img src="images/hit.png" alt="Touché" class="grid-image" />
+                                    }
+                                    else
+                                    {
+                                        <img src="images/miss.jpeg" alt="Raté" class="grid-image" />
+                                    }
+                                </td>
+                            }
+                        }
+                    </tr>
+                }
+            </tbody>
         </table>
     </div>
+
     <div>
         <button @onclick="UndoLastMove">Annuler</button>
-
         <div class="scrollable-container">
             <ul>
                 @foreach (var move in Enumerable.Reverse(GameState.Moves))
@@ -153,7 +190,6 @@
                 }
             </ul>
         </div>
-
     </div>
 </div>
 
@@ -164,25 +200,17 @@
         GridSize = GameState.PlayerGrid.GetLength(0);
         await LoadHistory();  
     }
+
     private async Task MakeAttack(int x, int y)
     {
-        GridSize = GameState.PlayerGrid.GetLength(0);
-
-        Console.WriteLine   ($"Attaque en {x}, {y}");
-        if (!GameState.IsPlayerTurn) return;
-
-        if (GameState.GameId == null)
+        if (!GameState.IsPlayerTurn || GameState.GameId == null)
             return;
 
         var response = await Http.PostAsJsonAsync($"/attack/{GameState.GameId}?x={x}&y={y}", new { });
-
         if (!response.IsSuccessStatusCode)
-        {
             return;
-        }
 
         var result = await response.Content.ReadFromJsonAsync<AttackResponse>();
-
         GameState.UpdateOpponentGrid(x, y, result.PlayerHit);
 
 
@@ -191,17 +219,18 @@
             GameState.WinnerName = result.Winner;
             Navigation.NavigateTo("/end");
         }
-        Console.WriteLine($"Vous avez touché un bateau en {result.IAX}.");
+
         if (result.IAHit != '.')
         {
             GameState.IsPlayerTurn = false;
-            Console.WriteLine($"L'IA a touché votre bateau en {result.IAX}, {result.IAY}.");
             GameState.UpdatePlayerGrid(result.IAX, result.IAY, result.IAHit);
+            GameState.UpdatePlayerGridImage(result.IAX, result.IAY, result.IAHit == 'X' ? "images/hit.png" : "images/miss.jpeg");
             GameState.IsPlayerTurn = true;
         }
-        await LoadHistory();
 
+        await LoadHistory();
     }
+
     private async Task LoadHistory()
     {
         if (!string.IsNullOrEmpty(GameState.GameId))
@@ -218,6 +247,7 @@
                     }
 
                     GameState.Moves = moves.ToList();
+
                 }
                 else
                 {
@@ -240,22 +270,30 @@
         if (GameState.Moves.Any())
         {
             var lastMove = GameState.Moves.Last();
-            var response = await Http.PostAsJsonAsync($"/undo/{GameState.GameId}", lastMove); 
-
+            var x = lastMove.X;
+            var y = lastMove.Y;
+            var response = await Http.PostAsJsonAsync($"/undo/{GameState.GameId}", lastMove);
+            Console.WriteLine($"lastMove {lastMove.AttackerName}");
+            Console.WriteLine("lastMove", lastMove.Y);
             if (response.IsSuccessStatusCode)
             {
-                GameState.Moves.RemoveAt(GameState.Moves.Count - 1); 
 
                 if (lastMove.AttackerName != "ia")
                 {
-                    GameState.UpdateOpponentGrid(lastMove.X, lastMove.Y, null);
+                    GameState.UpdateOpponentGrid(x, y, null);
+                    GameState.UpdatePlayerGridImage(x, y, null);
+                    Console.WriteLine("zzzzzzzzzzz");
                 }
                 else
                 {
-                    GameState.UpdatePlayerGrid(lastMove.X, lastMove.Y, lastMove.PreviousLetter);
-                }
+                    GameState.UpdatePlayerGrid(x, y, lastMove.PreviousLetter);
+                    GameState.UpdatePlayerGridImage(x,y, GameState.PlayerGridImagesOld[x, y]);
+                    Console.WriteLine($"TRYYY {GameState.PlayerGridImagesOld[x, y]}");
 
-                StateHasChanged(); 
+                }
+                GameState.Moves.RemoveAt(GameState.Moves.Count - 1);
+
+                StateHasChanged();
             }
             else
             {
@@ -263,16 +301,19 @@
             }
         }
     }
+
     
 
     public class MoveDto
     {
         public string AttackerName { get; set; }  
-        public int X { get; set; }                
+        public string DefenderName { get; set; }
+        public int X { get; set; }
         public int Y { get; set; }               
         public bool IsHit { get; set; }           
         public string LetterX { get; set; }    
         public char PreviousLetter { get; set; }  
+        public string PreviousImage { get; set; }
     }
 
 

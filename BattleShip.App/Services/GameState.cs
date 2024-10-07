@@ -7,9 +7,12 @@ namespace BattleShip.App.Service;
 public class GameState
 {
     public char[,] PlayerGrid { get; private set; }
-    public bool?[,] OpponentGrid { get; private set; } 
+    public static string[,] PlayerGridImagesOld { get; set; }
+
+    public string[,] PlayerGridImages { get; private set; }
+    public bool?[,] OpponentGrid { get; private set; }
     public string GameId { get; set; }
-    public bool IsPlayerTurn { get; set; } 
+    public bool IsPlayerTurn { get; set; }
     public string WinnerName { get; set; }
     public int GridSize { get; set; }
     public List<MoveDto> Moves { get; set; } = new List<MoveDto>();
@@ -24,14 +27,26 @@ public class GameState
     }
 
 
-    public void InitializeNewGame(char[,] playerGrid, string gameId, int gridSize)
+    public void InitializeNewGame(char[,] playerGrid, string gameId, int gridSize, string[,] playerGridImage, bool?[,] opponentGrid)
     {
         GridSize = gridSize;
         PlayerGrid = playerGrid;
-        OpponentGrid = new bool?[gridSize, gridSize]; 
+        OpponentGrid = opponentGrid;
+        PlayerGridImages = playerGridImage;
+
+        // Effectuer une copie profonde de PlayerGridImages
+        PlayerGridImagesOld = new string[gridSize, gridSize];
+        for (int i = 0; i < gridSize; i++)
+        {
+            for (int j = 0; j < gridSize; j++)
+            {
+                PlayerGridImagesOld[i, j] = playerGridImage[i, j]; // Copie des valeurs
+            }
+        }
 
         GameId = gameId;
         Console.WriteLine("GameId test: " + GameId);
+
     }
     public void InitializePlayerGrid(char[,] grid)
     {
@@ -44,7 +59,7 @@ public class GameState
 
     public void UpdateOpponentGrid(int x, int y, bool? hit)
     {
-        OpponentGrid[x, y] = hit;  
+        OpponentGrid[x, y] = hit;
     }
 
     public void UpdatePlayerGrid(int x, int y, char isHit)
@@ -55,7 +70,7 @@ public class GameState
     private char[,] ConvertListToArray(List<List<char>> list)
     {
         if (list == null || list.Count == 0)
-            return new char[0, 0]; 
+            return new char[0, 0];
 
         int rows = list.Count;
         int cols = list[0].Count;
@@ -66,7 +81,7 @@ public class GameState
         {
             for (int j = 0; j < cols; j++)
             {
-                array[i, j] = list[i][j]; 
+                array[i, j] = list[i][j];
             }
         }
 
@@ -76,30 +91,30 @@ public class GameState
     public char[,] ConvertListToCharArray(List<List<char>> list)
     {
         if (list == null || list.Count == 0)
-            return new char[0, 0]; 
+            return new char[0, 0];
 
-        int rows = list.Count; 
-        int cols = list[0].Count; 
+        int rows = list.Count;
+        int cols = list[0].Count;
         char[,] array = new char[rows, cols];
 
         for (int i = 0; i < rows; i++)
         {
             for (int j = 0; j < cols; j++)
             {
-                array[i, j] = list[i][j]; 
+                array[i, j] = list[i][j];
             }
         }
 
-        return array; 
+        return array;
     }
 
     public bool?[,] ConvertListToBoolArray(List<List<bool?>> list)
     {
         if (list == null || list.Count == 0)
-            return new bool?[0, 0]; 
+            return new bool?[0, 0];
 
         int rows = list.Count;
-        int cols = list[0].Count; 
+        int cols = list[0].Count;
         bool?[,] array = new bool?[rows, cols];
 
         for (int i = 0; i < rows; i++)
@@ -110,25 +125,30 @@ public class GameState
             }
         }
 
-        return array; 
+        return array;
     }
     public List<List<char>> ConvertCharArrayToList(char[,] array)
     {
         var list = new List<List<char>>();
-        int rows = array.GetLength(0); 
-        int cols = array.GetLength(1); 
+        int rows = array.GetLength(0);
+        int cols = array.GetLength(1);
 
         for (int i = 0; i < rows; i++)
         {
-            var rowList = new List<char>(); 
+            var rowList = new List<char>();
             for (int j = 0; j < cols; j++)
             {
-                rowList.Add(array[i, j]); 
+                rowList.Add(array[i, j]);
             }
-            list.Add(rowList); 
+            list.Add(rowList);
         }
 
-        return list; 
+        return list;
     }
+    public void UpdatePlayerGridImage(int x, int y, string image)
+    {
+        PlayerGridImages[x, y] = image;
+    }
+
 
 }

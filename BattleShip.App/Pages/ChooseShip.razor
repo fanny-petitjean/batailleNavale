@@ -15,11 +15,8 @@
     }
 
     .grid-container {
-        display: grid;
-        grid-template-columns: 40px repeat(@(GridSize), 40px);
-        grid-template-rows: 40px repeat(@(GridSize), 40px); 
-        gap: 1px;
-        justify-content: center;
+        display: table;
+        border-collapse: collapse; /* Élimine l'espace entre les cellules */
         margin-right: 20px;
     }
 
@@ -29,9 +26,19 @@
         background-color: white;
         border: 1px solid black;
         text-align: center;
-        line-height: 40px;
-        cursor: pointer;
+        vertical-align: middle;
+        padding: 0; /* Supprime tout padding */
+        margin: 0; /* Supprime toute marge */
     }
+
+        .grid-cell img {
+            width: 100%;
+            height: 100%;
+            display: block; /* Supprime les espaces sous l'image */
+            object-fit: cover; /* L'image doit couvrir entièrement la cellule */
+            margin: 0; /* Supprime toute marge indésirable */
+            padding: 0; /* Supprime tout padding */
+        }
 
         .grid-cell.ship {
             background-color: #663e43;
@@ -43,7 +50,7 @@
         }
 
     .header-cell {
-        background-color: #f0f0f0; /* Couleur de fond pour les en-têtes */
+        background-color: #f0f0f0;
         font-weight: bold;
     }
 
@@ -56,41 +63,46 @@
         .menu-container h4 {
             margin-top: 0;
         }
+
 </style>
 
 <h3>Placez vos bateaux</h3>
 
 <div style="display: flex;">
-    <!-- Grille de Bateaux -->
-    <div class="grid-container">
-        <!-- Première ligne vide pour aligner les chiffres -->
-        <div class="header-cell"></div> <!-- Case vide en haut à gauche -->
-        @for (int j = 0; j < GridSize; j++)
-        {
-            <div class="header-cell">@j</div> <!-- Chiffres en haut -->
-        }
-
-        @for (int i = 0; i < GridSize; i++)
-        {
-            <!-- Ajouter les lettres sur les côtés -->
-            <div class="header-cell">@Convert.ToChar(65 + i)</div> <!-- Lettres à gauche -->
-            @for (int j = 0; j < GridSize; j++)
+    <table class="grid-container">
+        <thead>
+            <tr>
+                <th class="header-cell"></th>
+                @for (int j = 0; j < GridSize; j++)
+                {
+                    <th class="header-cell">@j</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @for (int i = 0; i < GridSize; i++)
             {
-                int capturedI = i;
-                int capturedJ = j;
-
-                <div class="grid-cell @(PlayerGrid[i, j] != '\0' ? "ship" : HighlightedCells.Contains((i, j)) ? "highlight" : "")"
-                     @onclick="() => SelectCell(capturedI, capturedJ)">
-                    @if (PlayerGrid[i, j] != '\0')
+                <tr>
+                    <td class="header-cell">@Convert.ToChar(65 + i)</td>
+                    @for (int j = 0; j < GridSize; j++)
                     {
-                        <span>@(PlayerGrid[i, j])</span>
-                    }
-                </div>
-            }
-        }
-    </div>
+                        int capturedI = i;
+                        int capturedJ = j;
 
-    <!-- Conteneur des Menus -->
+                        <td class="grid-cell @(PlayerGrid[i, j] != '\0' ? "ship" : HighlightedCells.Contains((i, j)) ? "highlight" : "")"
+                            @onclick="() => SelectCell(capturedI, capturedJ)">
+                            @if (PlayerGrid[i, j] != '\0')
+                            {
+                                <img src="@PlayerGridImages[i, j]" alt="Ship" />
+                            }
+                        </td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
     <div class="menu-container">
         <h4>Sélection du bateau</h4>
         <select @bind="SelectedShipLength">
@@ -124,12 +136,12 @@
     </div>
 </div>
 
-
 @code {
     [Parameter]
     public string gamingType { get; set; }
     private int GridSize = 10;
     private char[,] PlayerGrid = new char[10, 10];
+    private string[,] PlayerGridImages = new string[10, 10];
     private List<Ship> AvailableShips = new List<Ship> {
         new Ship { Length = 1 },
         new Ship { Length = 2 },
@@ -159,26 +171,27 @@
     private void ResetAvailableShips()
     {
         AvailableShips = new List<Ship> {
-        new Ship { Length = 1 },
-        new Ship { Length = 2 },
-        new Ship { Length = 2 },
-        new Ship { Length = 3 },
-        new Ship { Length = 4 },
-        new Ship { Length = 4 }
-    };
+            new Ship { Length = 1 },
+            new Ship { Length = 2 },
+            new Ship { Length = 2 },
+            new Ship { Length = 3 },
+            new Ship { Length = 4 },
+            new Ship { Length = 4 }
+        };
 
         SelectedShipLength = AvailableShips.First().Length;
-        IsAllShipsPlaced = false;
     }
 
     private void InitializeGrid(int gridSize)
     {
         PlayerGrid = new char[gridSize, gridSize];
+        PlayerGridImages = new string[gridSize, gridSize];
         for (int i = 0; i < gridSize; i++)
         {
             for (int j = 0; j < gridSize; j++)
             {
                 PlayerGrid[i, j] = '\0';
+                PlayerGridImages[i, j] = string.Empty;
             }
         }
         PlacedShips.Clear();
@@ -203,12 +216,23 @@
         {
             for (int i = 0; i < SelectedShipLength; i++)
             {
-                int posX = startX + (IsHorizontal ? 0 : i);
-                int posY = startY + (IsHorizontal ? i : 0);
+                int posX = startX;
+                int posY = startY;
+
+                if (IsHorizontal)
+                {
+                    posY = startY + i;
+                }
+                else
+                {
+                    posX = startX + i;
+                }
+
                 HighlightedCells.Add((posX, posY));
             }
         }
     }
+
     private void PlaceShip()
     {
         if (IsAllShipsPlaced)
@@ -231,8 +255,20 @@
             char shipLetter = (char)('A' + PlacedShips.Count);
             for (int i = 0; i < SelectedShipLength; i++)
             {
-                int posX = x + (IsHorizontal ? 0 : i);
-                int posY = y + (IsHorizontal ? i : 0);
+                int posX = x;
+                int posY = y;
+
+                if (IsHorizontal)
+                {
+                    posY = y + i;
+                    PlayerGridImages[posX, posY] = $"/images/ships/{SelectedShipLength}-{i}.jpg";
+                }
+                else
+                {
+                    posX = x + i;
+                    PlayerGridImages[posX, posY] = $"/images/ships/{SelectedShipLength}-{i}-v.jpg";
+                }
+
                 PlayerGrid[posX, posY] = shipLetter;
             }
 
@@ -284,8 +320,17 @@
 
         for (int i = 0; i < length; i++)
         {
-            int posX = x + (isHorizontal ? 0 : i);
-            int posY = y + (isHorizontal ? i : 0);
+            int posX = x;
+            int posY = y;
+
+            if (isHorizontal)
+            {
+                posY = y + i;
+            }
+            else
+            {
+                posX = x + i;
+            }
 
             if (PlayerGrid[posX, posY] != '\0')
                 return false;
@@ -306,14 +351,12 @@
         if (response.IsSuccessStatusCode)
         {
 
-            var gameData  = await response.Content.ReadFromJsonAsync<NewGameResponse>();
+            var gameData = await response.Content.ReadFromJsonAsync<NewGameResponse>();
             GameState.GameId = gameData.GameId;
-
 
             char[,] playerGrid = GameState.ConvertListToCharArray(gameData.PlayerGrid);
             bool?[,] opponentGrid = GameState.ConvertListToBoolArray(gameData.OpponentGrid);
-            GameState.InitializePlayerGrid(playerGrid);
-            GameState.InitializeOpponentGrid(opponentGrid);
+            GameState.InitializeNewGame(playerGrid, gameData.GameId, gridSize, PlayerGridImages, opponentGrid);
             GameState.IsPlayerTurn = true;
             Navigation.NavigateTo("/gameIA");
         }

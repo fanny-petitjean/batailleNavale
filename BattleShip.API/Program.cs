@@ -171,15 +171,21 @@ app.MapGet("/history/{gameId}", (Guid gameId) =>
     }
     var history = moves.Select(m => new
     {
-        AttackerName = m.attacker?.name ?? "Inconnu",  // Si `attacker` est null, renvoie "Inconnu"
+        AttackerName = m.attacker.name, 
+        DefenderName= m.defender.name,
         X = m.x,
         Y = m.y,
         IsHit = m.isHit,
         PreviousLetter= m.previousValue
     }).ToList();
+    Console.WriteLine($"History for game with ID {history.ToString} retrieved successfully.");
+    foreach (var move in history)
+    {
+        Console.WriteLine($"Move: {JsonSerializer.Serialize(move)}");
+    }
 
 
-   // Console.WriteLine($"history : {JsonSerializer.Serialize(history)}");
+
 
     return Results.Ok(history);
 });
