@@ -34,13 +34,12 @@ public class GameState
         OpponentGrid = opponentGrid;
         PlayerGridImages = playerGridImage;
 
-        // Effectuer une copie profonde de PlayerGridImages
         PlayerGridImagesOld = new string[gridSize, gridSize];
         for (int i = 0; i < gridSize; i++)
         {
             for (int j = 0; j < gridSize; j++)
             {
-                PlayerGridImagesOld[i, j] = playerGridImage[i, j]; // Copie des valeurs
+                PlayerGridImagesOld[i, j] = playerGridImage[i, j];
             }
         }
 
