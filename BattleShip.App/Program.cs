@@ -23,6 +23,13 @@ builder.Services.AddScoped(sp =>
     return new BattleshipService.BattleshipServiceClient(channel);
 });
 
+builder.Services.AddOidcAuthentication(options =>
+{
+    // On lie les options avec ce qu'on a configuré dans `appsettings.json`
+    builder.Configuration.Bind("Auth0", options.ProviderOptions);
+    options.ProviderOptions.ResponseType = "code"; // Le type de flux recommandé est Authorization Code
+});
+
 builder.Services.AddSingleton<GameState>();
 
 await builder.Build().RunAsync();
