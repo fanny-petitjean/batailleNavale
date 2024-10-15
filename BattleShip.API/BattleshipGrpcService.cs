@@ -13,6 +13,6 @@ public class BattleshipGrpcService : BattleshipService.BattleshipServiceBase
             Winner = "None"  // Aucune logique ici, juste un test
         };
 
-        return Task.FromResult(response);  // Retourne une réponse immédiate
+        return Task.FromResult(response);  
     }
 }
