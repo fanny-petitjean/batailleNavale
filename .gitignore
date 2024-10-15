@@ -40,10 +40,6 @@ project.nuget.cache
 *.cache
 *.nuget
 
-# Configuration files
-appsettings.Development.json
-appsettings.json
-appsettings.* # Pour inclure les fichiers de configuration d'environnement
 
 # JetBrains Rider
 .idea/
