@@ -5,17 +5,18 @@ using BattleShip.App.Service;
 using System;
 using System.Collections.Generic;
 using BattleShip.API;
+using Grpc.AspNetCore.Web;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 var gameService = new GameService();
-// Configuration CORS pour Blazor
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorApp",
         builder =>
         {
-            builder.WithOrigins("https://localhost:7087")
+            builder.WithOrigins("https://localhost:5254")
                    .AllowAnyMethod()
                    .AllowAnyHeader()
                    .AllowCredentials();
@@ -33,23 +34,29 @@ builder.Services.AddCors(options =>
 });
 
 
+builder.Services.AddGrpc();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 builder.Services.AddSingleton<GameService>();
 
 var app = builder.Build();
 app.UseCors("AllowAll");
-
 app.UseCors("AllowBlazorApp");
-app.UseHttpsRedirection();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+
+app.UseGrpcWeb(new GrpcWebOptions { DefaultEnabled = true });
+
+
+app.MapGrpcService<BattleshipGrpcService>().EnableGrpcWeb();
+
+
 var converter = new Converter();
 
 app.MapPost("/newGame/{gameType}", async ([FromRoute] string gameType, [FromQuery] int? difficulty, [FromQuery] int gridSize, [FromBody] List<ShipN> gameSetupRequest) =>
@@ -76,15 +83,15 @@ app.MapPost("/newGame/{gameType}", async ([FromRoute] string gameType, [FromQuer
     Player opponent;
     if (difficulty.HasValue)
     {
-        // Créer un joueur IA avec la difficulté spécifiée
+        // Crï¿½er un joueur IA avec la difficultï¿½ spï¿½cifiï¿½e
         opponent = new Player("ia", true, gridSize, difficulty.Value);
-        Console.WriteLine($"Création de l'IA avec une difficulté de niveau {difficulty.Value}");
+        Console.WriteLine($"Crï¿½ation de l'IA avec une difficultï¿½ de niveau {difficulty.Value}");
     }
     else
     {
-        // Créer un joueur IA normal sans difficulté
+        // Crï¿½er un joueur IA normal sans difficultï¿½
         opponent = new Player("Player 2", true, gridSize);
-        Console.WriteLine("Création d'une partie contre un autre joueur");
+        Console.WriteLine("Crï¿½ation d'une partie contre un autre joueur");
     }
 
     Console.WriteLine($"gridSize : {gridSize}");
@@ -116,7 +123,6 @@ app.MapPost("/newGame/{gameType}", async ([FromRoute] string gameType, [FromQuer
 
 app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int y) =>
 {
-
     var game = gameService.GetGame(gameId);
     if (game == null)
     {
@@ -147,7 +153,7 @@ app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int
     string iaId = "";
     string iaTouch = "";
 
-    if (game.history.LastMoveName()=="ia")
+    if (game.history.LastMoveName() == "ia")
     {
         IAH = move.isHit ? 'X' : 'O';
         iaTouch = move.touch;
@@ -162,8 +168,7 @@ app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int
         playerId = move1.attacker.id.ToString();
     }
 
-
-var response = new
+    var response = new
     {
         PlayerHit = ia.placeShipGrid.Grid[x, y] == 'X',
         PlayerX = x,
@@ -176,12 +181,10 @@ var response = new
         IAY = iaY,
         GameOver = gameOver,
         Winner = winner
-
     };
 
     return Results.Ok(response);
 });
-
 
 app.MapGet("/history/{gameId}", (Guid gameId) =>
 {

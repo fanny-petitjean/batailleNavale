@@ -3,6 +3,7 @@
 @inject HttpClient Http
 @inject GameState GameState
 @inject NavigationManager Navigation
+@inject BattleshipService.BattleshipServiceClient client
 @using System.Text.Json;
 
 <style>
@@ -172,7 +173,10 @@
     </div>
 
     <div>
+        <button @onclick="LoadHistory">Charger l'Historique</button>
+
         <button @onclick="UndoLastMove">Annuler</button>
+        <button @onclick="TestGrpcCommunication">Tester gRPC</button>
         <div class="scrollable-container">
             <ul>
                 @foreach (var move in Enumerable.Reverse(GameState.Moves))
@@ -201,12 +205,35 @@
 </div>
 
 @code {
+    private string gameStatus;
     private int GridSize = 10;
+
     protected override async Task OnInitializedAsync()
     {
-        GridSize = GameState.PlayerGrid.GetLength(0);
+        var request = new AttackRequestGRPC { Col = 2, Row = 3 };
+
+        // Make a gRPC call
+        var response = await client.AttackAsync(request);
+
+        // Handle the response
+        if (response.Hit)
+        {
+            gameStatus = "It's a hit!";
+        }
+        else
+        {
+            gameStatus = "Miss!";
+        }
+
+        if (response.GameOver)
+        {
+            gameStatus += $" Game over! Winner: {response.Winner}";
+        }
+         GridSize = GameState.PlayerGrid.GetLength(0);
         await LoadHistory();  
+        
     }
+    
 
     private async Task MakeAttack(int x, int y)
     {
@@ -303,6 +330,39 @@
             }
         }
     }
+        private async Task TestGrpcCommunication()
+        {
+            var request = new AttackRequestGRPC
+            {
+                Col = 1, // Exemple de coordonnées à attaquer
+                Row = 1
+            };
+
+            try
+            {
+                // Appel du service gRPC
+                var response = await client.AttackAsync(request);
+
+                // Vérifier et afficher le résultat dans la console
+                if (response.Hit)
+                {
+                    Console.WriteLine("Touché !");
+                }
+                else
+                {
+                    Console.WriteLine("Raté.");
+                }
+
+                if (response.GameOver)
+                {
+                    Console.WriteLine($"Partie terminée ! Gagnant : {response.Winner}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de l'appel gRPC : {ex.Message}");
+            }
+        }
 
     
 
@@ -321,7 +381,7 @@
 
 
 
-        public class AttackResponse
+    public class AttackResponse
         {
             public bool PlayerHit { get; set; }
             public char IAHit { get; set; }
@@ -334,5 +394,11 @@
             public int PlayerY { get; set; }
             public string IaId { get; set; }
             public string PlayerId { get; set; }
+
         }
+        
+    }
+
+@code {
+
 }
