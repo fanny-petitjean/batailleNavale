@@ -23,6 +23,17 @@ namespace BattleShip.Models
             this.positionY = positionY;
 
         }
+        public Ship(char letter, int size)
+        {
+            this.id = Guid.NewGuid();
+            this.letter = letter;
+            this.size = size;
+            this.hits = 0;
+            this.isHorizontal = isHorizontal;
+            this.positionX = positionX;
+            this.positionY = positionY;
+
+        }
         public void RegisterHit()
         {
             hits++;

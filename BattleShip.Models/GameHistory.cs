@@ -27,7 +27,7 @@
         {
             foreach (Move move in moves)
             {
-                Console.WriteLine($"Player {move.attacker.name} at position {move.x}, {move.y} {(move.isHit ? "hit" : "missed")}");
+                Console.WriteLine($"Le joueur {move.attacker.name} à la positiion {move.x}, {move.y} à {move.touch}");
             }
         }
 
@@ -53,6 +53,19 @@
         {
             return moves;
         }
+        public Move LastHitMoveByPlayer(string playerName)
+        {
+            for (int i = moves.Count - 1; i >= 0; i--)
+            {
+                if (moves[i].attacker.name.Equals(playerName, StringComparison.OrdinalIgnoreCase) &&
+                    (moves[i].touch.Equals("touché", StringComparison.OrdinalIgnoreCase)))
+                {
+                    return moves[i]; 
+                }
+            }
+            return null; 
+        }
+
 
     }
 }

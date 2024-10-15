@@ -26,55 +26,119 @@ namespace BattleShip.Models
             currentPlayerIndex = currentPlayer;
         }
 
-        public char attack(Player attacker, Player defender, int x, int y)
+        public string attack(Player attacker, Player defender, int x, int y)
         {
             char cell = defender.placeShipGrid.Grid[x, y];
-            char response = 'n';
+
+            string response = "null";
+
             if (cell != '\0' && cell != 'O' && cell != 'X')
             {
                 changeCell(defender, attacker, x, y, 'X', cell);
+
+                Ship ship = defender.placeShipGrid.ships.FirstOrDefault(s => s.letter == cell);
+                if (ship != null && ship.isDead)
+                {
+                    response = "coulé"; 
+                }
+                else
+                {
+                    response = "touché"; 
+                }
+
                 if (checkWinner())
                 {
                     displayWinner();
-                    return 'W';
+                    return "gagnant";
                 }
-                response = 'X';
-
             }
             else if (cell != 'O' && cell != 'X')
             {
                 changeCell(defender, attacker, x, y, 'O', cell);
-                response = 'O';
+                response = "loupé"; 
             }
 
+            // Si le défenseur est un IA, elle joue ensuite
             if (defender.name == "ia")
             {
                 playIA(defender, attacker);
             }
-            return response;
 
+            return response;
         }
+
+
+
         public void playIA(Player ia, Player player)
         {
-            int[][] availableMoves = player.placeShipGrid.GetAvailableMoves();
-            var randomMove = availableMoves[Random.Shared.Next(availableMoves.Length)];
-            attack(ia, player, randomMove[0], randomMove[1]);
-        }
+            Move lastMove = history.LastHitMoveByPlayer(ia.name);
 
-        public void changeCell(Player defender, Player attacker, int x, int y, char touch, char letter)
-        {
-            defender.placeShipGrid.Grid[x, y] = touch;
-            if (touch == 'X')
+            if (lastMove != null)
             {
-                Ship ship = defender.placeShipGrid.ships.FirstOrDefault(s => s.letter == letter);
-                ship.RegisterHit();
-                history.AddMove(new Move(attacker,defender, x, y, true, letter));
+                int lastAttackX = lastMove.x;
+                int lastAttackY = lastMove.y;
+
+                int perimeter = 1;
+                switch (ia.iaDifficulty)
+                {
+                    case 1:
+                        perimeter = 5;
+                        break;
+                    case 2:
+                        perimeter = 3;
+                        break;
+                    case 3:
+                        perimeter = 1;
+                        break;
+                }
+
+                int[][] possibleMoves = player.placeShipGrid.GetPossibleMovesAround(lastAttackX, lastAttackY, perimeter);
+
+                if (possibleMoves.Length > 0)
+                {
+                    var randomMove = possibleMoves[Random.Shared.Next(possibleMoves.Length)];
+                    attack(ia, player, randomMove[0], randomMove[1]);
+                }
             }
             else
             {
-                history.AddMove(new Move(attacker,defender, x, y, false, '\0'));
+                int[][] availableMoves = player.placeShipGrid.GetAvailableMoves();
+                var randomMove = availableMoves[Random.Shared.Next(availableMoves.Length)];
+                attack(ia, player, randomMove[0], randomMove[1]);
             }
         }
+
+
+
+
+        public void changeCell(Player defender, Player attacker, int x, int y, char touch, char letter)
+        {
+            defender.placeShipGrid.Grid[x, y] = touch; // Mise à jour du coup sur la grille
+
+            if (touch == 'X') // Si c'est un coup touché
+            {
+                Ship ship = defender.placeShipGrid.ships.FirstOrDefault(s => s.letter == letter);
+                if (ship != null)
+                {
+                    ship.RegisterHit(); // Enregistre le coup sur le bateau
+
+                    if (ship.isDead) // Si le bateau est coulé
+                    {
+                        history.AddMove(new Move(attacker, defender, x, y, true, letter, "coulé"));
+                    }
+                    else // Si le bateau est juste touché
+                    {
+                        history.AddMove(new Move(attacker, defender, x, y, true, letter, "touché"));
+                    }
+                }
+            }
+            else
+            {
+                history.AddMove(new Move(attacker, defender, x, y, false, '\0', "loupé"));
+            }
+        }
+
+
 
         public void displayWinner()
         {

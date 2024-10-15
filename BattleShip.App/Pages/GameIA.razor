@@ -178,19 +178,26 @@
                 @foreach (var move in Enumerable.Reverse(GameState.Moves))
                 {
                     <li>
-                        Joueur @move.AttackerName a @if (move.IsHit)
+                        Joueur @move.AttackerName a
+                        @if (move.Touch == "coulé")
                         {
-                            <b>touché</b>
+                            <strong style="color: red;">@move.Touch</strong>
+                        }
+                        else if (move.Touch == "touché")
+                        {
+                            <strong>@move.Touch</strong>
                         }
                         else
                         {
-                            <i>raté</i>
-                        } sur (@move.LetterX, @move.Y)
+                            @move.Touch
+                        }
+                        sur (@move.LetterX, @move.Y)
                     </li>
                 }
             </ul>
         </div>
     </div>
+
 </div>
 
 @code {
@@ -273,21 +280,17 @@
             var x = lastMove.X;
             var y = lastMove.Y;
             var response = await Http.PostAsJsonAsync($"/undo/{GameState.GameId}", lastMove);
-            Console.WriteLine($"lastMove {lastMove.AttackerName}");
-            Console.WriteLine("lastMove", lastMove.Y);
             if (response.IsSuccessStatusCode)
             {
 
                 if (lastMove.AttackerName != "ia")
                 {
                     GameState.UpdateOpponentGrid(x, y, null);
-                    Console.WriteLine("zzzzzzzzzzz");
                 }
                 else
                 {
                     GameState.UpdatePlayerGrid(x, y, lastMove.PreviousLetter);
                     GameState.UpdatePlayerGridImage(x,y, GameState.PlayerGridImagesOld[x, y]);
-                    Console.WriteLine($"TRYYY {GameState.PlayerGridImagesOld[x, y]}");
 
                 }
                 GameState.Moves.RemoveAt(GameState.Moves.Count - 1);
@@ -310,7 +313,8 @@
         public int X { get; set; }
         public int Y { get; set; }               
         public bool IsHit { get; set; }           
-        public string LetterX { get; set; }    
+        public string Touch { get; set; }
+        public string LetterX { get; set; }
         public char PreviousLetter { get; set; }  
         public string PreviousImage { get; set; }
     }
@@ -321,6 +325,7 @@
         {
             public bool PlayerHit { get; set; }
             public char IAHit { get; set; }
+            public string IATouch  { get; set;}
             public int IAX { get; set; }
             public int IAY { get; set; }
             public bool GameOver { get; set; }

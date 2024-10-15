@@ -7,12 +7,12 @@ namespace BattleShip.Models
         private const char EmptyCell = '\0';
         public List<Ship> ships = new List<Ship>
     {
-        new Ship('A', 4, true,0,1),
-        new Ship('B', 4, true, 0, 1),
-        new Ship('C', 3, true, 0, 4),
-        new Ship('D', 2,false,6,1),
-        new Ship('E', 2, true, 0, 1),
-        new Ship('F', 1, false, 0, 1)
+        new Ship('A', 4),
+        new Ship('B', 4),
+        new Ship('C', 3),
+        new Ship('D', 2),
+        new Ship('E', 2),
+        new Ship('F', 1)
     };
 
         public char[,] Grid { get; private set; }
@@ -32,10 +32,23 @@ namespace BattleShip.Models
             InitializeGrid();
             PlaceAllShips();
         }
-        public PlaceShipGrid(int gridSize, char[,] grid)
+        public PlaceShipGrid(int gridSize, List<Ship> ships)
+        {
+
+            GridSize = gridSize;
+            Grid = new char[GridSize, GridSize];
+            this.ships = ships;
+            foreach (var ship in ships)
+            {
+                PlaceShip(Grid, ship, ship.positionX, ship.positionY, ship.isHorizontal);
+            }
+        
+        }
+        public PlaceShipGrid(int gridSize, char[,] grid, List<Ship> ships)
         {
             GridSize = gridSize;
             Grid = grid;
+            this.ships = ships;
         }
         private void InitializeGrid()
         {
@@ -49,6 +62,7 @@ namespace BattleShip.Models
         }
         private void PlaceAllShips()
         {
+
             foreach (var ship in ships)
             {
                 bool placed = false;
@@ -128,6 +142,29 @@ namespace BattleShip.Models
             }
             return availableMovesList.ToArray();
         }
+        public int[][] GetPossibleMovesAround(int x, int y, int perimeter)
+        {
+            List<int[]> possibleMovesList = new List<int[]>();
+
+            int startX = Math.Max(x - perimeter, 0);
+            int endX = Math.Min(x + perimeter, GridSize - 1);
+            int startY = Math.Max(y - perimeter, 0);
+            int endY = Math.Min(y + perimeter, GridSize - 1);
+
+            for (int i = startX; i <= endX; i++)
+            {
+                for (int j = startY; j <= endY; j++)
+                {
+                    if (this.Grid[i, j] != 'X' && this.Grid[i, j] != 'O')
+                    {
+                        possibleMovesList.Add(new int[] { i, j });
+                    }
+                }
+            }
+
+            return possibleMovesList.ToArray();
+        }
+
     }
 
 } 

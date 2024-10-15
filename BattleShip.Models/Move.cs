@@ -16,19 +16,21 @@ namespace BattleShip.Models
         {
             get; set;
         }
+        public string touch;
         public Player attacker { get; set; }
         public Player defender { get; set; }
-        public Move(int x, int y, bool isHit)
+        public Move(int x, int y, bool isHit, string touch)
         {
             this.x = x;
             this.y = y;
             this.isHit = isHit;
+            this.touch = touch;
         }
 
         public char previousValue { get; set; }
         [JsonConstructor]
 
-        public Move(Player attacker, Player defender, int x, int y, bool isHit, char previousValue)
+        public Move(Player attacker, Player defender, int x, int y, bool isHit, char previousValue, string touch)
         {
             this.x = x;
             this.y = y;
@@ -38,6 +40,7 @@ namespace BattleShip.Models
             this.previousValue = previousValue;
             Console.WriteLine("Move created");
             Console.WriteLine("previous", previousValue);
+            this.touch = touch;
         }
      
     }

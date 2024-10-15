@@ -52,38 +52,67 @@ if (app.Environment.IsDevelopment())
 }
 var converter = new Converter();
 
-app.MapPost("/newGame/{gameType}", async ([FromRoute] string gameType, [FromBody] List<List<char>> gridRequest) =>
+app.MapPost("/newGame/{gameType}", async ([FromRoute] string gameType, [FromQuery] int? difficulty, [FromQuery] int gridSize, [FromBody] List<ShipN> gameSetupRequest) =>
 {
-    Console.WriteLine($"gameType : {gameType}");
-    var grid = converter.ConvertListToCharArray(gridRequest);
-    var gridSize = grid.GetLength(0);
-    var placeGrid = new PlaceShipGrid(gridSize, grid);
+
+
+    List<Ship> shipList = new List<Ship>();
+    foreach (var row in gameSetupRequest)
+    {
+        Console.WriteLine($"test : {row.Letter}, {row.Length}, {row.IsHorizontal}, {row.StartX}, {row.StartY}) ");
+        shipList.Add(new Ship(row.Letter, row.Length, row.IsHorizontal, row.StartX, row.StartY));
+    }
+    var placeGrid = new PlaceShipGrid(gridSize, shipList);
+    for(int i = 0; i < gridSize; i++)
+    {
+        for (int j = 0; j < gridSize; j++)
+        {
+            Console.Write($"t{placeGrid.Grid[i, j]}  ");
+        }
+        Console.WriteLine();
+    }
     var player = new Player("Player 1", false, placeGrid);
-    var ia = new Player("ia", true, gridSize);
+
+    Player opponent;
+    if (difficulty.HasValue)
+    {
+        // Créer un joueur IA avec la difficulté spécifiée
+        opponent = new Player("ia", true, gridSize, difficulty.Value);
+        Console.WriteLine($"Création de l'IA avec une difficulté de niveau {difficulty.Value}");
+    }
+    else
+    {
+        // Créer un joueur IA normal sans difficulté
+        opponent = new Player("Player 2", true, gridSize);
+        Console.WriteLine("Création d'une partie contre un autre joueur");
+    }
 
     Console.WriteLine($"gridSize : {gridSize}");
-    var players = new List<Player> { player, ia };
+    var players = new List<Player> { player, opponent };
     Console.WriteLine($"players : {players.Count}");
     var game = new Game(players, 0);
     Console.WriteLine($"game : {game.players.Count}");
 
     Guid guid = gameService.AddGame(game);
     Console.WriteLine($"guid : {guid}");
+
     var PlayerGrid = converter.ConvertCharArrayToList(player.placeShipGrid.Grid);
     Console.WriteLine($"PlayerGrid : {PlayerGrid.Count}");
-    var OpponentGrid = converter.ConvertBoolArrayToList(game.displayOpponentGrid(ia.placeShipGrid));
+    var OpponentGrid = converter.ConvertBoolArrayToList(game.displayOpponentGrid(opponent.placeShipGrid));
     Console.WriteLine($"OpponentGrid : {OpponentGrid.Count}");
+
     var response = new
     {
         GameId = guid.ToString(),
         Player = player.name,
-        Opponent = ia.name,
+        Opponent = opponent.name,
         PlayerGrid = PlayerGrid,
         OpponentGrid = OpponentGrid
     };
 
     return Results.Ok(response);
 });
+
 
 app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int y) =>
 {
@@ -97,11 +126,11 @@ app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int
     var player = game.players.First(); 
     var ia = game.players.Last();
 
-    char responseChar = game.attack(player, ia, x, y);
+    string responseChar = game.attack(player, ia, x, y);
 
     bool gameOver = false;
     string winner = game.winner?.name;
-    if (responseChar == 'W')
+    if (responseChar == "gagnant")
     {
         gameOver = game.checkWinner();
         winner = game.winner?.name; 
@@ -116,16 +145,16 @@ app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int
     y = move.y;
     string playerId = move.attacker.id.ToString();
     string iaId = "";
+    string iaTouch = "";
 
     if (game.history.LastMoveName()=="ia")
     {
-        IAH = game.history.LastMove().isHit ? 'X' : 'O';
-        iaX = game.history.LastMove().x;
-        iaY = game.history.LastMove().y;
+        IAH = move.isHit ? 'X' : 'O';
+        iaTouch = move.touch;
+        iaX = move.x;
+        iaY = move.y;
         gameOver = game.checkWinner();
         winner = game.winner?.name;
-        moveIa = game.history.LastMove();
-        move = game.history.LastMove();
         iaId = move.attacker.id.ToString();
         Move move1 = game.history.SecondLastMove();
         x = move1.x;
@@ -142,6 +171,7 @@ var response = new
         PlayerId = playerId,
         IaId = iaId,
         IAHit = IAH,
+        IATouch = iaTouch,
         IAX = iaX,
         IAY = iaY,
         GameOver = gameOver,
@@ -169,6 +199,8 @@ app.MapGet("/history/{gameId}", (Guid gameId) =>
         Console.WriteLine($"No moves found for game with ID {gameId}");
         return Results.Ok(new List<Move>());
     }
+    Console.WriteLine($"History for game with ID {gameId} retrieved successfully.");
+
     var history = moves.Select(m => new
     {
         AttackerName = m.attacker.name, 
@@ -176,7 +208,8 @@ app.MapGet("/history/{gameId}", (Guid gameId) =>
         X = m.x,
         Y = m.y,
         IsHit = m.isHit,
-        PreviousLetter= m.previousValue
+        Touch = m.touch,
+        PreviousLetter = m.previousValue
     }).ToList();
     Console.WriteLine($"History for game with ID {history.ToString} retrieved successfully.");
     foreach (var move in history)
@@ -225,5 +258,18 @@ app.MapPost("/undo/{gameId}", (Guid gameId) =>
 
 app.Run();
 
+public class GameSetupRequest
+{
+    public List<List<char>> Grid { get; set; }
+    public List<ShipN> Ships { get; set; }
+}
 
+public class ShipN
+{
+    public char Letter { get; set; }
+    public int Length { get; set; }
+    public int StartX { get; set; }
+    public int StartY { get; set; }
+    public bool IsHorizontal { get; set; }
+}
 
