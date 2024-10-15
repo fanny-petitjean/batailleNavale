@@ -3,6 +3,7 @@
 @inject HttpClient Http
 @inject GameState GameState
 @inject NavigationManager Navigation
+@inject BattleshipService.BattleshipServiceClient client
 
 <style>
     body{
@@ -108,6 +109,7 @@
     </div>
     <div>
         <button @onclick="LoadHistory">Charger l'Historique</button>
+        <button @onclick="TestGrpcCommunication">Tester gRPC</button>
 
         <ul>
             @foreach (var move in GameState.Moves)
@@ -168,7 +170,39 @@
             {
             }
         }
+        private async Task TestGrpcCommunication()
+        {
+            var request = new AttackRequestGRPC
+            {
+                Col = 1, // Exemple de coordonnées à attaquer
+                Row = 1
+            };
 
+            try
+            {
+                // Appel du service gRPC
+                var response = await client.AttackAsync(request);
+
+                // Vérifier et afficher le résultat dans la console
+                if (response.Hit)
+                {
+                    Console.WriteLine("Touché !");
+                }
+                else
+                {
+                    Console.WriteLine("Raté.");
+                }
+
+                if (response.GameOver)
+                {
+                    Console.WriteLine($"Partie terminée ! Gagnant : {response.Winner}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erreur lors de l'appel gRPC : {ex.Message}");
+            }
+        }
         public class AttackResponse
         {
             public bool PlayerHit { get; set; }
@@ -183,4 +217,32 @@
             public string PlayerId { get; set; }
 
         }
+        
+    }
+
+@code {
+private string gameStatus;
+
+protected override async Task OnInitializedAsync()
+{
+var request = new AttackRequestGRPC { Col = 2, Row = 3 };
+
+// Make a gRPC call
+var response = await client.AttackAsync(request);
+
+// Handle the response
+if (response.Hit)
+{
+gameStatus = "It's a hit!";
+}
+else
+{
+gameStatus = "Miss!";
+}
+
+if (response.GameOver)
+{
+gameStatus += $" Game over! Winner: {response.Winner}";
+}
+}
 }
