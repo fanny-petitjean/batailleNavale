@@ -17,12 +17,12 @@
     .grid-container {
         display: flex;
         justify-content: space-between;
-        margin: 20px; /* Ajout d'une marge pour le conteneur principal */
+        margin: 20px; 
     }
 
     .grid {
         display: table;
-        border-collapse: collapse; /* Élimine l'espace entre les cellules */
+        border-collapse: collapse;
         margin-right: 20px;
     }
 
@@ -33,17 +33,17 @@
         border: 1px solid black;
         text-align: center;
         vertical-align: middle;
-        padding: 0; /* Supprime tout padding */
-        margin: 0; /* Supprime toute marge */
+        padding: 0;
+        margin: 0;
     }
 
         .grid-cell img {
             width: 100%;
             height: 100%;
-            display: block; /* Supprime les espaces sous l'image */
-            object-fit: cover; /* L'image doit couvrir entièrement la cellule */
-            margin: 0; /* Supprime toute marge indésirable */
-            padding: 0; /* Supprime tout padding */
+            display: block; 
+            object-fit: cover;
+            margin: 0;
+            padding: 0; 
         }
 
         .grid-cell.ship {
@@ -173,7 +173,6 @@
     </div>
 
     <div>
-        <button @onclick="LoadHistory">Charger l'Historique</button>
 
         <button @onclick="UndoLastMove">Annuler</button>
         <button @onclick="TestGrpcCommunication">Tester gRPC</button>
@@ -182,7 +181,7 @@
                 @foreach (var move in Enumerable.Reverse(GameState.Moves))
                 {
                     <li>
-                        Joueur @move.AttackerName a
+                        @move.AttackerName a
                         @if (move.Touch == "coulé")
                         {
                             <strong style="color: red;">@move.Touch</strong>
@@ -207,15 +206,16 @@
 @code {
     private string gameStatus;
     private int GridSize = 10;
-
+    protected override void OnInitialized()
+    {
+        GameState.OnChange += StateHasChanged; 
+    }
     protected override async Task OnInitializedAsync()
     {
         var request = new AttackRequestGRPC { Col = 2, Row = 3 };
 
-        // Make a gRPC call
         var response = await client.AttackAsync(request);
 
-        // Handle the response
         if (response.Hit)
         {
             gameStatus = "It's a hit!";
@@ -334,16 +334,14 @@
         {
             var request = new AttackRequestGRPC
             {
-                Col = 1, // Exemple de coordonnées à attaquer
+                Col = 1, 
                 Row = 1
             };
 
             try
             {
-                // Appel du service gRPC
                 var response = await client.AttackAsync(request);
 
-                // Vérifier et afficher le résultat dans la console
                 if (response.Hit)
                 {
                     Console.WriteLine("Touché !");

@@ -14,6 +14,7 @@
 <h3>Bataille Navale</h3>
 
 <button @onclick="StartNewGameIA">Démarrer une nouvelle partie</button>
+<button @onclick="RestartGame">Redémarrer la partie</button>
 
 @if (GameState.PlayerGrid != null)
 {
@@ -28,5 +29,57 @@
 
         Navigation.NavigateTo("/chooseShip/ia");
 
+    }
+    private async Task RestartGame()
+    {
+
+        var response = await Http.GetAsync($"/restart/{GameState.GameId}");
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = 0; j < 10; j++)
+            {
+                Console.WriteLine("Player grid : " + GameState.PlayerGrid[i, j]);
+            }
+        };
+        if (response.IsSuccessStatusCode)
+        {
+            var gameData = await response.Content.ReadFromJsonAsync<NewGameResponse>();
+            GameState.GameId = gameData.GameId;
+            GameState.RestartGridImage();
+
+            char[,] playerGrid = GameState.ConvertListToCharArray(gameData.PlayerGrid);
+            bool?[,] opponentGrid = GameState.ConvertListToBoolArray(gameData.OpponentGrid);
+            GameState.IsPlayerTurn = true;
+            GameState.InitializePlayerGrid(playerGrid);
+            Console.WriteLine("Player grid : " + playerGrid);
+            GameState.InitializeOpponentGrid(opponentGrid);
+            GameState.RestartGridImage();
+            GameState.RemoveMoveAll();
+            for(int i = 0; i < 10; i++)
+            {
+                for(int j = 0; j < 10; j++)
+                {
+                    Console.WriteLine("Player grid : " + GameState.PlayerGrid[i, j]);
+                }
+            };
+
+            StateHasChanged();
+            GameState.RestartGame();
+
+        }
+        else
+        {
+            Console.WriteLine("Erreur lors de la création de la partie : " + await response.Content.ReadAsStringAsync());
+        }
+           
+          
+  
+        }
+
+    public class NewGameResponse
+    {
+        public string GameId { get; set; }
+        public List<List<char>> PlayerGrid { get; set; }
+        public List<List<bool?>> OpponentGrid { get; set; }
     }
 }

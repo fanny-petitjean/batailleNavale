@@ -99,6 +99,12 @@ namespace BattleShip.Models
                     var randomMove = possibleMoves[Random.Shared.Next(possibleMoves.Length)];
                     attack(ia, player, randomMove[0], randomMove[1]);
                 }
+                else
+                {
+                    int[][] availableMoves = player.placeShipGrid.GetAvailableMoves();
+                    var randomMove = availableMoves[Random.Shared.Next(availableMoves.Length)];
+                    attack(ia, player, randomMove[0], randomMove[1]);
+                }
             }
             else
             {
@@ -170,7 +176,7 @@ namespace BattleShip.Models
 
         }
 
- public List<PlaceShipGrid> displayGrid()
+    public List<PlaceShipGrid> displayGrid()
         {
             List<PlaceShipGrid> grids = new List<PlaceShipGrid>();
             foreach (Player p in players)

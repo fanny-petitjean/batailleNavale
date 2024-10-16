@@ -43,5 +43,7 @@ namespace BattleShip.Models
                 isDead = true;
             }
         }
+        public void UnregisterHit() { hits--; }
+
     }
 }

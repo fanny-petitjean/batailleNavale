@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using BattleShip.API;
 using Grpc.AspNetCore.Web;
 using System.Text.Json;
+using System.ComponentModel;
+using System.Numerics;
 
 var builder = WebApplication.CreateBuilder(args);
 var gameService = new GameService();
@@ -61,52 +63,32 @@ var converter = new Converter();
 
 app.MapPost("/newGame/{gameType}", async ([FromRoute] string gameType, [FromQuery] int? difficulty, [FromQuery] int gridSize, [FromBody] List<ShipN> gameSetupRequest) =>
 {
-
-
     List<Ship> shipList = new List<Ship>();
     foreach (var row in gameSetupRequest)
     {
-        Console.WriteLine($"test : {row.Letter}, {row.Length}, {row.IsHorizontal}, {row.StartX}, {row.StartY}) ");
         shipList.Add(new Ship(row.Letter, row.Length, row.IsHorizontal, row.StartX, row.StartY));
     }
     var placeGrid = new PlaceShipGrid(gridSize, shipList);
-    for(int i = 0; i < gridSize; i++)
-    {
-        for (int j = 0; j < gridSize; j++)
-        {
-            Console.Write($"t{placeGrid.Grid[i, j]}  ");
-        }
-        Console.WriteLine();
-    }
+    
     var player = new Player("Player 1", false, placeGrid);
 
     Player opponent;
     if (difficulty.HasValue)
     {
-        // Cr�er un joueur IA avec la difficult� sp�cifi�e
         opponent = new Player("ia", true, gridSize, difficulty.Value);
-        Console.WriteLine($"Cr�ation de l'IA avec une difficult� de niveau {difficulty.Value}");
     }
     else
     {
-        // Cr�er un joueur IA normal sans difficult�
         opponent = new Player("Player 2", true, gridSize);
-        Console.WriteLine("Cr�ation d'une partie contre un autre joueur");
     }
 
-    Console.WriteLine($"gridSize : {gridSize}");
     var players = new List<Player> { player, opponent };
-    Console.WriteLine($"players : {players.Count}");
     var game = new Game(players, 0);
-    Console.WriteLine($"game : {game.players.Count}");
 
     Guid guid = gameService.AddGame(game);
-    Console.WriteLine($"guid : {guid}");
 
     var PlayerGrid = converter.ConvertCharArrayToList(player.placeShipGrid.Grid);
-    Console.WriteLine($"PlayerGrid : {PlayerGrid.Count}");
     var OpponentGrid = converter.ConvertBoolArrayToList(game.displayOpponentGrid(opponent.placeShipGrid));
-    Console.WriteLine($"OpponentGrid : {OpponentGrid.Count}");
 
     var response = new
     {
@@ -240,15 +222,13 @@ app.MapPost("/undo/{gameId}", (Guid gameId) =>
     var x = lstMove.x;
     var y = lstMove.y;
     var previousValue = lstMove.previousValue.ToString();
-    Console.WriteLine($"x:  {x} et y : {y} ");
-    Console.WriteLine($"previous : {previousValue}");
+
     var success = game.history.RemoveMove();
     lstMove = game.history.LastMove();
     x = lstMove.x;
     y = lstMove.y;
     previousValue = lstMove.previousValue.ToString();
-    Console.WriteLine($" AFTER x:  {x} et y : {y} ");
-    Console.WriteLine($"AFTER previous : {previousValue}");
+
 
     if (!success)
     {
@@ -258,7 +238,33 @@ app.MapPost("/undo/{gameId}", (Guid gameId) =>
     return Results.Ok();
 });
 
+app.MapGet("/restart/{gameId}", (Guid gameId) =>
+{
 
+    var game = gameService.GetGame(gameId);
+    Console.WriteLine("lldld");
+
+    if (game == null)
+    {
+        return Results.NotFound("Game not found");
+    }
+    var success = game.history.RemoveMoveAll();
+
+
+    var PlayerGrid = converter.ConvertCharArrayToList(game.players[0].placeShipGrid.Grid);
+    var OpponentGrid = converter.ConvertBoolArrayToList(game.displayOpponentGrid(game.players[1].placeShipGrid));
+
+    var response = new
+    {
+        GameId = gameId,
+        PlayerGrid = PlayerGrid,
+        OpponentGrid = OpponentGrid
+    };
+    Console.WriteLine("lldlffffffffffffffd");
+
+
+    return Results.Ok(response);
+});
 app.Run();
 
 public class GameSetupRequest

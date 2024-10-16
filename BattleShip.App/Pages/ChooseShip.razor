@@ -171,8 +171,7 @@
 
     private HashSet<(int, int)> HighlightedCells = new HashSet<(int, int)>();
 
-    // Niveau de difficulté de l'IA
-    private int SelectedDifficulty = 1; // Valeur par défaut
+    private int SelectedDifficulty = 3; 
 
     private void OnGridSizeChanged(int newSize)
     {
@@ -372,7 +371,6 @@
         var difficultyParam = SelectedDifficulty == 0 ? (int?)null : SelectedDifficulty;
 
         Console.WriteLine("Démarrage de la partie...");
-        // Prepare the list of placed ships
         var placedShipsData = PlacedShips.Select(ship => new
         {
             Letter = ship.Letter,
@@ -382,13 +380,11 @@
             IsHorizontal = ship.IsHorizontal
         }).ToList();
 
-        // Send the ship data along with the game creation request
         var response = await Http.PostAsJsonAsync($"/newGame/{gamingType}?difficulty={difficultyParam}&gridSize={gridSize}", placedShipsData);
         if (response.IsSuccessStatusCode)
         {
             var gameData = await response.Content.ReadFromJsonAsync<NewGameResponse>();
             GameState.GameId = gameData.GameId;
-            Console.WriteLine("afficher grille");
             for(int i = 0; i < gameData.PlayerGrid.Count; i++)
             {
                 for(int j = 0; j < gameData.PlayerGrid[i].Count; j++)

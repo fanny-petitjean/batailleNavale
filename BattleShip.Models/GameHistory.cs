@@ -13,13 +13,39 @@
             moves.Add(move);
         }
 
-        public bool RemoveMove() {
-            if( moves.Count == 0 ) return false ;
+        public bool RemoveMove()
+        {
+            if (moves.Count == 0) return false;
             Move lastMove = moves.Last();
+            if (lastMove.defender.placeShipGrid.Grid[lastMove.x, lastMove.y] == 'X')
+            {
+                Ship shipToUpdate = lastMove.defender.placeShipGrid.ships.FirstOrDefault(ship => ship.letter == lastMove.previousValue);
+                shipToUpdate.UnregisterHit();
+                shipToUpdate.isDead = false;
+            }
             lastMove.defender.placeShipGrid.Grid[lastMove.x, lastMove.y] = lastMove.previousValue;
 
 
+
             moves.Remove(lastMove);
+            return true;
+        }
+
+        public bool RemoveMoveAll()
+        {
+            if (moves.Count == 0) return false;
+            foreach (Move move in moves)
+            {
+                if (move.defender.placeShipGrid.Grid[move.x, move.y] == 'X')
+                {
+                    Ship shipToUpdate = move.defender.placeShipGrid.ships.FirstOrDefault(ship => ship.letter == move.previousValue);
+                    shipToUpdate.UnregisterHit();
+                    shipToUpdate.isDead = false;
+                }
+                move.defender.placeShipGrid.Grid[move.x, move.y] = move.previousValue;
+            }
+            
+            moves = new List<Move>();
             return true;
         }
 
@@ -60,10 +86,10 @@
                 if (moves[i].attacker.name.Equals(playerName, StringComparison.OrdinalIgnoreCase) &&
                     (moves[i].touch.Equals("touché", StringComparison.OrdinalIgnoreCase)))
                 {
-                    return moves[i]; 
+                    return moves[i];
                 }
             }
-            return null; 
+            return null;
         }
 
 

@@ -8,7 +8,8 @@ public class GameState
 {
     public char[,] PlayerGrid { get; private set; }
     public static string[,] PlayerGridImagesOld { get; set; }
-
+    public event Action OnChange;
+    private void NotifyStateChanged() => OnChange?.Invoke();
     public string[,] PlayerGridImages { get; private set; }
     public bool?[,] OpponentGrid { get; private set; }
     public string GameId { get; set; }
@@ -25,10 +26,15 @@ public class GameState
     {
         return Moves.Remove(move);
     }
-
+    public void RemoveMoveAll()
+    {
+        Moves = new List<MoveDto>();
+    }
 
     public void InitializeNewGame(char[,] playerGrid, string gameId, int gridSize, string[,] playerGridImage, bool?[,] opponentGrid)
     {
+        NotifyStateChanged(); // Notifiez le changement d'état
+
         GridSize = gridSize;
         PlayerGrid = playerGrid;
         OpponentGrid = opponentGrid;
@@ -60,7 +66,17 @@ public class GameState
     {
         OpponentGrid[x, y] = hit;
     }
-
+    public void RestartGridImage()
+    {
+        PlayerGridImages = new string[GridSize, GridSize];
+        for (int i = 0; i < GridSize; i++)
+        {
+            for (int j = 0; j < GridSize; j++)
+            {
+                PlayerGridImages[i, j] = PlayerGridImagesOld[i, j];
+            }
+        }
+    }
     public void UpdatePlayerGrid(int x, int y, char isHit)
     {
         PlayerGrid[x, y] = isHit;
@@ -147,6 +163,12 @@ public class GameState
     public void UpdatePlayerGridImage(int x, int y, string image)
     {
         PlayerGridImages[x, y] = image;
+    }
+    public void RestartGame()
+    {
+        // Réinitialiser les propriétés de l'état du jeu
+        // ...
+        NotifyStateChanged(); 
     }
 
 
