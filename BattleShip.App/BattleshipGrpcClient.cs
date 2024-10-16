@@ -1,6 +1,6 @@
 using Grpc.Net.Client;
 using Grpc.Net.Client.Web;
-// Make sure the namespace matches your generated code
+
 
 public class BattleshipGrpcClient
 {

@@ -1,0 +1,55 @@
+@* Client/Shared/AccessControl.razor *@
+
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
+@inject NavigationManager Navigation
+
+<div class="access-control-container">
+    <AuthorizeView>
+        <Authorized>
+            <p class="welcome-message">Hello, @context.User.Identity.Name!</p>
+            <a href="#" class="logout-link" @onclick="BeginSignOut">Log out</a>
+        </Authorized>
+        <NotAuthorized>
+            <a href="authentication/login" class="login-link"></a>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+private void BeginSignOut(MouseEventArgs args)
+{
+Navigation.NavigateToLogout("authentication/logout");
+}
+}
+
+<style>
+    .access-control-container {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        text-align: right; 
+        z-index: 1000;
+    }
+
+    .welcome-message {
+        color: #fff;
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .login-link, .logout-link {
+        background-color: #663e43;
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 0.875rem;
+        transition: background-color 0.3s ease;
+    }
+
+    .login-link:hover, .logout-link:hover {
+        background-color: #4b2c2e;
+    }
+</style>

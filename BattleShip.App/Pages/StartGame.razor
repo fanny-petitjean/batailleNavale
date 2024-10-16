@@ -1,7 +1,7 @@
 ﻿@page "/"
 @using BattleShip.Models
 @using BattleShip.App.Service
-
+@attribute [Authorize]
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject GameState GameState
@@ -14,7 +14,9 @@
 
 <button @onclick="StartNewGameIA">Nouvelle partie IA</button>
 <button @onclick="StartNewGamePlayer">Nouvelle partie avec un autre joueur</button>
-
+<div class="right-content">
+    <AccessControl /> 
+</div>
 @if (!string.IsNullOrEmpty(DebugMessage))
 {
     <div>@DebugMessage</div>
