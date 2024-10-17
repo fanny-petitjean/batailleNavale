@@ -221,7 +221,7 @@
         try
         {
             var response = await client.AttackAsync(request);
-            
+
             if (response.Hit)
             {
                 gameStatus = "It's a hit!";
@@ -263,7 +263,7 @@
         }
         catch (AccessTokenNotAvailableException exception)
         {
-   
+
             exception.Redirect();
         }
         catch (Exception ex)
@@ -271,7 +271,7 @@
             Console.WriteLine($"Erreur lors de la récupération de l'historique : {ex.Message}");
         }
 
-    
+
         await LoadHistory();
     }
     private async Task MakeAttack(int x, int y)
@@ -290,6 +290,7 @@
         if (result.GameOver)
         {
             GameState.WinnerName = result.Winner;
+            GameState.IncrementPlayerVictory(result.Winner);
             Navigation.NavigateTo("/end");
         }
 

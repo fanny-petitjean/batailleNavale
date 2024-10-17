@@ -4,24 +4,160 @@
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject GameState GameState
+
 <style>
-    body{
+    body {
+        background-color: #E2A3AA;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .grid-container {
+        display: flex;
+        justify-content: space-around;
+        margin: 20px;
+        width: 80%;
+    }
+
+    .grid {
+        display: table;
+        border-collapse: collapse;
+    }
+
+    .grid-cell, .header-cell {
+        width: 40px;
+        height: 40px;
+        background-color: white;
+        border: 1px solid black;
+        text-align: center;
+        vertical-align: middle;
+        padding: 0;
+        margin: 0;
+    }
+
+        .grid-cell img {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+            margin: 0;
+            padding: 0;
+        }
+
+        .grid-cell.ship {
+            background-color: #663e43;
+            color: white;
+        }
+
+        .grid-cell.highlight {
+            background-color: lightgray;
+        }
+
+    .header-cell {
+        background-color: #f0f0f0;
+        font-weight: bold;
+    }
+
+    .winner-container {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .stats-container {
+        margin-top: 20px;
+        background-color: #f5f5f5;
+        padding: 10px;
+        border-radius: 8px;
+        width: 50%;
+    }
+
+        .stats-container table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stats-container th, .stats-container td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+    .scrollable-container {
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        padding: 10px;
         background-color: #E2A3AA;
     }
-</style>
-<h3>FIN DE PARTIE</h3>
 
-@if (GameState.WinnerName != null)
+    .button-container {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 20px;
+        width: 50%;
+    }
+
+    button {
+        padding: 10px 20px;
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+</style>
+
+<div class="winner-container">
+    <h3>FIN DE PARTIE</h3>
+
+    @if (GameState.WinnerName != null)
+    {
+        <p>Le gagnant est : <strong>@GameState.WinnerName</strong></p>
+    }
+    else
+    {
+        <p>Le jeu est terminé, mais aucun gagnant n'a été déterminé.</p>
+    }
+</div>
+
+@if (PlayerStats != null && PlayerStats.Count > 0)
 {
-    <p>Le gagnant est : <strong> @GameState.WinnerName</strong></p>
+    <div class="stats-container">
+        <h4>Statistiques des joueurs</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Joueur</th>
+                    <th>Parties Gagnées</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var player in PlayerStats)
+                {
+                    <tr>
+                        <td>@player.Key</td>
+                        <td>@player.Value</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 else
 {
-    <p>Le jeu est terminé, mais aucun gagnant n'a été déterminé.</p>
+    <p>Chargement des données des joueurs...</p>
 }
 
-<button @onclick="StartNewGameIA">Nouvelle partie IA</button>
-<button @onclick="StartNewGamePlayer">Nouvelle partie avec un autre joueur</button>
+<div class="button-container">
+    <button @onclick="StartNewGameIA">Nouvelle partie IA</button>
+    <button @onclick="StartNewGamePlayer">Nouvelle partie avec un autre joueur</button>
+</div>
 
 @if (!string.IsNullOrEmpty(DebugMessage))
 {
@@ -30,21 +166,22 @@ else
 
 @code {
     private string DebugMessage { get; set; }
+    private Dictionary<string, int> PlayerStats { get; set; } = new Dictionary<string, int>();
+
+    // Lors de l'initialisation de la page
+    protected override async Task OnInitializedAsync()
+    {
+        PlayerStats =GameState.GetPlayerVictories();
+    }
+
     private async Task StartNewGameIA()
     {
-
         Navigation.NavigateTo("/chooseShip/ia");
-
     }
 
     private async Task StartNewGamePlayer()
     {
         DebugMessage = "Fonctionnalité StartNewGamePlayer non encore implémentée.";
         Console.WriteLine(DebugMessage);
-
-        DebugMessage += "\nSortie de StartNewGamePlayer.";
-        Console.WriteLine(DebugMessage);
     }
-
-   
 }

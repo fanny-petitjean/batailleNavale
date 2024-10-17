@@ -16,6 +16,8 @@ public class GameState
     public bool IsPlayerTurn { get; set; }
     public string WinnerName { get; set; }
     public int GridSize { get; set; }
+    private Dictionary<string, int> playerVictories = new Dictionary<string, int>();
+
     public List<MoveDto> Moves { get; set; } = new List<MoveDto>();
     public void AddMove(MoveDto move)
     {
@@ -166,10 +168,25 @@ public class GameState
     }
     public void RestartGame()
     {
-        // R�initialiser les propri�t�s de l'�tat du jeu
-        // ...
+  
         NotifyStateChanged(); 
     }
 
+    public void IncrementPlayerVictory(string playerName)
+    {
+        if (playerVictories.ContainsKey(playerName))
+        {
+            playerVictories[playerName]++;
+        }
+        else
+        {
+            playerVictories[playerName] = 1;
+        }
+    }
+
+    public Dictionary<string, int> GetPlayerVictories()
+    {
+        return playerVictories;
+    }
 
 }
