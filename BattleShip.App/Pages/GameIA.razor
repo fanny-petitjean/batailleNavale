@@ -5,6 +5,9 @@
 @inject NavigationManager Navigation
 @inject BattleshipService.BattleshipServiceClient client
 @using System.Text.Json;
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+
 
 <style>
     body {
@@ -212,29 +215,65 @@
     }
     protected override async Task OnInitializedAsync()
     {
+
         var request = new AttackRequestGRPC { Col = 2, Row = 3 };
 
-        var response = await client.AttackAsync(request);
+        try
+        {
+            var response = await client.AttackAsync(request);
+            
+            if (response.Hit)
+            {
+                gameStatus = "It's a hit!";
+            }
+            else
+            {
+                gameStatus = "Miss!";
+            }
 
-        if (response.Hit)
-        {
-            gameStatus = "It's a hit!";
+            if (response.GameOver)
+            {
+                gameStatus += $" Game over! Winner: {response.Winner}";
+            }
+            GridSize = GameState.PlayerGrid.GetLength(0);
         }
-        else
+        catch (Exception ex)
         {
-            gameStatus = "Miss!";
+            Console.WriteLine($"Erreur lors de l'appel gRPC : {ex.Message}");
+        }
+        try
+        {
+
+            var historyResponse = await Http.GetFromJsonAsync<List<MoveDto>>($"/history/{GameState.GameId}");
+
+            if (historyResponse != null && historyResponse.Any())
+            {
+                foreach (var move in historyResponse)
+                {
+                    move.LetterX = Convert.ToChar(65 + move.X).ToString();
+                }
+
+                GameState.Moves = historyResponse.ToList();
+                gameStatus += " Historique récupéré avec succès.";
+            }
+            else
+            {
+                Console.WriteLine("Aucun mouvement trouvé dans l'historique.");
+            }
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+   
+            exception.Redirect();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur lors de la récupération de l'historique : {ex.Message}");
         }
 
-        if (response.GameOver)
-        {
-            gameStatus += $" Game over! Winner: {response.Winner}";
-        }
-         GridSize = GameState.PlayerGrid.GetLength(0);
-        await LoadHistory();  
-        
-    }
     
-
+        await LoadHistory();
+    }
     private async Task MakeAttack(int x, int y)
     {
         if (!GameState.IsPlayerTurn || GameState.GameId == null)

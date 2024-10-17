@@ -1,12 +1,117 @@
 ﻿<CascadingAuthenticationState>
-    <Router AppAssembly="@typeof(Program).Assembly">
-        <Found Context="routeData">
-            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-        </Found>
-        <NotFound>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <p>Sorry, there's nothing at this address.</p>
-            </LayoutView>
-        </NotFound>
-    </Router>
+    <div class="app-layout">
+        <div class="header">
+            <div class="right">
+                <AccessControl />
+            </div>
+        </div>
+        
+        <Router AppAssembly="@typeof(App).Assembly">
+            <Found Context="routeData">
+                <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                    <Authorizing>
+                        <div class="auth-container">
+                            <div class="loading-spinner"></div>
+                            <p class="auth-message">Determining session state, please wait...</p>
+                        </div>
+                    </Authorizing>
+                    <NotAuthorized>
+                        <div class="auth-container not-authorized">
+                            <h1 class="auth-header">Access Denied</h1>
+                            <p class="auth-message">You're not authorized to access this page.</p>
+                            <a href="authentication/login" class="login-button">Log in</a>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeRouteView>
+                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            </Found>
+            <NotFound>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <div class="not-found-container">
+                        <h1 class="not-found-header">Page Not Found</h1>
+                        <p role="alert" class="not-found-message">Sorry, there's nothing at this address.</p>
+                        <a href="/" class="back-home-button">Go Back Home</a>
+                    </div>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </div>
 </CascadingAuthenticationState>
+
+<style>
+    .app-layout {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+
+    .header {
+        display: flex;
+        justify-content: flex-end; 
+        padding: 10px;
+        background-color: #E2A3AA;
+    }
+
+    body {
+        background-color: #E2A3AA;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    .auth-container, .not-found-container {
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        max-width: 500px;
+        text-align: center;
+        margin: auto;
+    }
+
+    .auth-header, .not-found-header {
+        font-size: 2.5rem;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .auth-message, .not-found-message {
+        font-size: 1.25rem;
+        color: #666;
+        margin-bottom: 30px;
+    }
+
+    .login-button, .back-home-button {
+        background-color: #007bff;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        font-size: 1.25rem;
+        transition: background-color 0.3s ease;
+    }
+
+    .login-button:hover, .back-home-button:hover {
+        background-color: #0056b3;
+    }
+
+    .loading-spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        margin-bottom: 20px;
+        animation: rotation infinite 1.5s;
+    }
+
+    .loading-spinner {
+        transition: transform 0.5s linear;
+    }
+
+    .loading-spinner:hover {
+        transform: rotate(360deg);
+    }
+</style>

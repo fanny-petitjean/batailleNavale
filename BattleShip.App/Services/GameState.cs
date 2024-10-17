@@ -33,7 +33,7 @@ public class GameState
 
     public void InitializeNewGame(char[,] playerGrid, string gameId, int gridSize, string[,] playerGridImage, bool?[,] opponentGrid)
     {
-        NotifyStateChanged(); // Notifiez le changement d'état
+        NotifyStateChanged(); // Notifiez le changement d'ï¿½tat
 
         GridSize = gridSize;
         PlayerGrid = playerGrid;
@@ -166,7 +166,7 @@ public class GameState
     }
     public void RestartGame()
     {
-        // Réinitialiser les propriétés de l'état du jeu
+        // Rï¿½initialiser les propriï¿½tï¿½s de l'ï¿½tat du jeu
         // ...
         NotifyStateChanged(); 
     }

@@ -1,8 +1,7 @@
 @page "/gameIA"
 @using BattleShip.Models
 @using BattleShip.App.Service
-
-@inject HttpClient Http
+@attribute [Authorize]
 @inject NavigationManager Navigation
 @inject GameState GameState
 <style>

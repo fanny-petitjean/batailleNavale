@@ -1,7 +1,8 @@
 ﻿using BattleShip.Models;
-
+using Microsoft.AspNetCore.Authorization;
 namespace BattleShip.API
 {
+    [Authorize]  
     public class GameService
     {
         public Dictionary<Guid, Game> games = new Dictionary<Guid, Game>();

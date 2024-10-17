@@ -9,6 +9,7 @@ using Grpc.AspNetCore.Web;
 using System.Text.Json;
 using System.ComponentModel;
 using System.Numerics;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 var gameService = new GameService();
@@ -34,8 +35,18 @@ builder.Services.AddCors(options =>
                    .AllowAnyHeader();
         });
 });
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, c =>
+    {
+        c.Authority = $"https://{builder.Configuration["Auth0:Domain"]}";
+        c.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidAudience = builder.Configuration["Auth0:Audience"],
+            ValidIssuer = $"https://{builder.Configuration["Auth0:Domain"]}"
+        };
+    });
 
-
+builder.Services.AddAuthorization(); 
 builder.Services.AddGrpc();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -45,6 +56,9 @@ builder.Services.AddSingleton<GameService>();
 var app = builder.Build();
 app.UseCors("AllowAll");
 app.UseCors("AllowBlazorApp");
+app.UseAuthentication();
+app.UseAuthorization();
+
 
 if (app.Environment.IsDevelopment())
 {
