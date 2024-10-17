@@ -1,9 +1,80 @@
+# Définition de l'adresse de l'API
 @BattleShip.API_HostAddress = http://localhost:5186
 
+# Requête pour créer une nouvelle partie
 POST {{BattleShip.API_HostAddress}}/newGame
 Accept: application/json
 Content-Type: application/json
 
+{
+  "Ships": [
+    {
+      "Letter": "A",
+      "Length": 5,
+      "StartX": 0,
+      "StartY": 0,
+      "IsHorizontal": true
+    },
+    {
+      "Letter": "B",
+      "Length": 4,
+      "StartX": 2,
+      "StartY": 2,
+      "IsHorizontal": true
+    },
+    {
+      "Letter": "C",
+      "Length": 3,
+      "StartX": 4,
+      "StartY": 4,
+      "IsHorizontal": false
+    }
+  ]
+}
+
+# Requête pour démarrer une nouvelle partie avec un type de jeu spécifique (par exemple "ia" ou "players")
+POST {{BattleShip.API_HostAddress}}/newGame/{{gameType}}/{{gameId}}?difficulty=2&gridSize=10
+Accept: application/json
+Content-Type: application/json
+
+{
+  "Ships": [
+    {
+      "Letter": "D",
+      "Length": 3,
+      "StartX": 3,
+      "StartY": 3,
+      "IsHorizontal": false
+    },
+    {
+      "Letter": "E",
+      "Length": 2,
+      "StartX": 5,
+      "StartY": 1,
+      "IsHorizontal": true
+    }
+  ]
+}
+
+# Requête pour effectuer une attaque
 POST {{BattleShip.API_HostAddress}}/attack/{{gameId}}?x={{x}}&y={{y}}
+Accept: application/json
+Content-Type: application/json
+
+# Exemple d'attaque : dans le corps de la requête, on indique le jeu et les coordonnées.
+# Vous remplacez {{gameId}}, {{x}}, et {{y}} par les valeurs réelles.
+
+{
+  "x": 2,
+  "y": 3
+}
+
+# Requête pour récupérer l'historique des attaques
+GET {{BattleShip.API_HostAddress}}/history/{{gameId}}
+Accept: application/json
+Content-Type: application/json
+
+# Requête pour annuler le dernier mouvement (undo)
+POST {{BattleShip.API_HostAddress}}/undo/{{gameId}}
 Accept: application/json
 Content-Type: application/json
