@@ -80,6 +80,31 @@
         padding: 10px;
         background-color: #E2A3AA;
     }
+    .button {
+        padding: 4px 10px;
+        background-color: #663e43;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 0.8em;
+        transition: background-color 0.3s, transform 0.2s ease;
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+        margin-top: 8px;
+        margin-left: 30px;
+        margin-bottom: 0.5px;
+    }
+    .button:hover {
+        background-color: #a25d68; 
+    }
+
+    .button:active {
+        background-color: #904a58; 
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2); 
+        transform: translateY(2px); 
+    }
+    
+    
 </style>
 
 <div class="grid-container">
@@ -177,8 +202,8 @@
 
     <div>
 
-        <button @onclick="UndoLastMove">Annuler</button>
-        <button @onclick="TestGrpcCommunication">Tester gRPC</button>
+        <button class="button"@onclick="UndoLastMove">Annuler</button>
+        <button class="button"@onclick="TestGrpcCommunication">Tester gRPC</button>
         <div class="scrollable-container">
             <ul>
                 @foreach (var move in Enumerable.Reverse(GameState.Moves))
@@ -188,6 +213,7 @@
                         @if (move.Touch == "coulé")
                         {
                             <strong style="color: red;">@move.Touch</strong>
+                            GameState.IncrementShipsSunk(move.AttackerName);
                         }
                         else if (move.Touch == "touché")
                         {
@@ -290,6 +316,7 @@
         if (result.GameOver)
         {
             GameState.WinnerName = result.Winner;
+            GameState.EndGame();
             GameState.IncrementPlayerVictory(result.Winner);
             Navigation.NavigateTo("/end");
         }

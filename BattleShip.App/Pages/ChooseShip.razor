@@ -62,9 +62,56 @@
         .menu-container h4 {
             margin-top: 0;
         }
+
+    .custom-button {
+        padding: 4px 10px;
+        background-color: #b56b77;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 0.8em;
+        transition: background-color 0.3s, transform 0.2s ease;
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+        margin-top: 8px;
+        margin-left: 30px;
+        margin-bottom: 0.5px;
+    }
+    .select-title {
+        font-size: 1em;
+        margin-bottom: 5px;
+        color: #663e43;
+    }
+    .custom-select {
+        padding: 6px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background-color: white;
+        font-size: 0.9em;
+        color: #663e43;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    .orientation-selector {
+        margin-top: 1px;
+        font-size: 0.9em;
+        display: flex;
+        align-items: center;
+    }
+
+    .orientation-selector input[type="checkbox"] {
+        margin-right: 5px;
+        transform: scale(1);
+    }
+
+    .orientation-selector label {
+        color: #663e43;
+        cursor: pointer;
+        font-size: 1.1em;
+    }
 </style>
 
-<h3>Placez vos bateaux</h3>
+<h3 >Placez vos bateaux</h3>
 
 <div style="display: flex;">
     <table class="grid-container">
@@ -101,23 +148,25 @@
     </table>
 
     <div class="menu-container">
-        <h4>Sélection du bateau</h4>
-        <select @bind="SelectedShipLength">
+        <h4 class="select-title">Sélection du bateau</h4>
+        <select class="custom-select"@bind="SelectedShipLength">
             @foreach (var ship in AvailableShips)
             {
                 <option value="@ship.Length">@($"Bateau (Taille: {ship.Length})")</option>
             }
         </select>
 
-        <label>
-            <input type="checkbox" @bind="IsHorizontal" />
-            Horizontal
-        </label>
+        <div class="orientation-selector">
+            <label for="orientation-toggle">
+                <input type="checkbox" id="orientation-toggle" @bind="IsHorizontal" />
+                Horizontal
+            </label>
+        </div>
 
-        <button @onclick="PlaceShip">Placer le bateau</button>
+        <button @onclick="PlaceShip" class="custom-button">Placer le bateau</button>
 
-        <h4>Choisissez la taille de la grille</h4>
-        <select id="grid-size" @bind:get="GridSize" @bind:set="OnGridSizeChanged">
+        <h4 class="select-title">Choisissez la taille de la grille</h4>
+        <select class = "custom-select" id="grid-size" @bind:get="GridSize" @bind:set="OnGridSizeChanged">
             @for (int size = 5; size <= 15; size++)
             {
                 <option value="@size">@size x @size</option>
@@ -126,8 +175,8 @@
 
         @if (gamingType == "ia")
         {
-            <h4>Sélectionnez la difficulté de l'IA</h4>
-            <select @bind="SelectedDifficulty">
+            <h4 class="select-title">Sélectionnez la difficulté de l'IA</h4>
+            <select class="custom-select"@bind="SelectedDifficulty">
                 <option value="1" selected="@((SelectedDifficulty == 1).ToString())">Niveau 1</option>
                 <option value="2" selected="@((SelectedDifficulty == 2).ToString())">Niveau 2</option>
                 <option value="3" selected="@((SelectedDifficulty == 3).ToString())">Niveau 3</option>
@@ -137,7 +186,7 @@
         <div>
             @if (IsAllShipsPlaced)
             {
-                <button @onclick="StartGame">Commencer le jeu</button>
+                <button @onclick="StartGame" class="custom-button">Commencer le jeu</button>
             }
         </div>
     </div>

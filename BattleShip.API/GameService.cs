@@ -32,12 +32,10 @@ namespace BattleShip.API
         {
             if (playerVictories.ContainsKey(playerName))
             {
-                // Si le joueur existe, incrémenter son nombre de victoires
                 playerVictories[playerName]++;
             }
             else
             {
-                // Sinon, ajouter le joueur au dictionnaire avec 1 victoire
                 playerVictories[playerName] = 1;
             }
         }

@@ -57,8 +57,6 @@ namespace BattleShip.Models
                 changeCell(defender, attacker, x, y, 'O', cell);
                 response = "loupé"; 
             }
-
-            // Si le défenseur est un IA, elle joue ensuite
             if (defender.name == "ia")
             {
                 playIA(defender, attacker);
@@ -66,9 +64,7 @@ namespace BattleShip.Models
 
             return response;
         }
-
-
-
+        
         public void playIA(Player ia, Player player)
         {
             Move lastMove = history.LastHitMoveByPlayer(ia.name);
@@ -119,20 +115,20 @@ namespace BattleShip.Models
 
         public void changeCell(Player defender, Player attacker, int x, int y, char touch, char letter)
         {
-            defender.placeShipGrid.Grid[x, y] = touch; // Mise à jour du coup sur la grille
+            defender.placeShipGrid.Grid[x, y] = touch; 
 
-            if (touch == 'X') // Si c'est un coup touché
+            if (touch == 'X') 
             {
                 Ship ship = defender.placeShipGrid.ships.FirstOrDefault(s => s.letter == letter);
                 if (ship != null)
                 {
-                    ship.RegisterHit(); // Enregistre le coup sur le bateau
+                    ship.RegisterHit(); 
 
-                    if (ship.isDead) // Si le bateau est coulé
+                    if (ship.isDead) 
                     {
                         history.AddMove(new Move(attacker, defender, x, y, true, letter, "coulé"));
                     }
-                    else // Si le bateau est juste touché
+                    else 
                     {
                         history.AddMove(new Move(attacker, defender, x, y, true, letter, "touché"));
                     }
@@ -144,12 +140,8 @@ namespace BattleShip.Models
             }
         }
 
-
-
         public void displayWinner()
         {
-            //display
-
             //afficher le gagnant
         }
 

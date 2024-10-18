@@ -10,12 +10,27 @@
     body{
         background-color: #E2A3AA;
     }
+    .custom-button {
+        padding: 4px 10px;
+        background-color: #b56b77;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+        font-size: 0.8em;
+        transition: background-color 0.3s, transform 0.2s ease;
+        box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+        margin-top: 8px;
+        margin-left: 30px;
+        margin-bottom: 0.5px;
+    }
+    
 </style>
 
 <h3>Bataille Navale</h3>
 
-<button @onclick="StartNewGameIA">Démarrer une nouvelle partie</button>
-<button @onclick="RestartGame">Redémarrer la partie</button>
+<button class="custom-button" @onclick="StartNewGameIA">Démarrer une nouvelle partie</button>
+<button class="custom-button" @onclick="RestartGame">Redémarrer la partie</button>
 
 @if (GameState.PlayerGrid != null)
 {

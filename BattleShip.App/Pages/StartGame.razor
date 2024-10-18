@@ -9,8 +9,42 @@
     body {
         background-color: #E2A3AA;
     }
+
+    button {
+        padding: 12px 36px; 
+        margin: 10px 15px; 
+        background-color: #e48a94; 
+        color: white;
+        border: 2px solid transparent; 
+        cursor: pointer;
+        border-radius: 12px; 
+        transition: background-color 0.3s ease, transform 0.2s ease, border-color 0.3s ease; 
+        font-size: 1.2em; 
+        font-weight: bold; 
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
+    }
+
+    button:hover {
+        background-color: #663e43; 
+        transform: translateY(-3px); 
+        border-color: #fff; 
+    }
+
+    button:active {
+        background-color: #c15967; 
+        transform: translateY(0); 
+    }
+    .simple-title {
+        font-size: 1.8em; 
+        color: #663e43; 
+        text-align: left; 
+        font-weight: 500; 
+        margin-bottom: 15px; 
+        letter-spacing: 1px; 
+    }
+    
 </style>
-<h3>Démarrer une nouvelle partie</h3>
+<h3 class="simple-title">Démarrer une nouvelle partie</h3>
 
 <button @onclick="StartNewGameIA">Nouvelle partie IA</button>
 <button @onclick="StartNewGamePlayer">Nouvelle partie avec un autre joueur</button>
@@ -26,6 +60,7 @@
     private string DebugMessage { get; set; } 
     private async Task StartNewGameIA()
     {
+         GameState.StartGame();
          Navigation.NavigateTo("/chooseShip/ia");
 
     }

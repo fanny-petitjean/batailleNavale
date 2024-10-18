@@ -11,18 +11,25 @@
         display: flex;
         flex-direction: column;
         align-items: center;
+        justify-content: center; 
+        font-family: Arial, sans-serif;
+        height: 100vh; 
+        margin: 0;
     }
 
     .grid-container {
         display: flex;
-        justify-content: space-around;
-        margin: 20px;
+        justify-content: center;
+        margin: 20px auto;
         width: 80%;
+        max-width: 1200px;
+        text-align: center;
     }
 
     .grid {
         display: table;
         border-collapse: collapse;
+        margin: 0 auto; 
     }
 
     .grid-cell, .header-cell {
@@ -36,23 +43,23 @@
         margin: 0;
     }
 
-        .grid-cell img {
-            width: 100%;
-            height: 100%;
-            display: block;
-            object-fit: cover;
-            margin: 0;
-            padding: 0;
-        }
+    .grid-cell img {
+        width: 100%;
+        height: 100%;
+        display: block;
+        object-fit: cover;
+        margin: 0;
+        padding: 0;
+    }
 
-        .grid-cell.ship {
-            background-color: #663e43;
-            color: white;
-        }
+    .grid-cell.ship {
+        background-color: #663e43;
+        color: white;
+    }
 
-        .grid-cell.highlight {
-            background-color: lightgray;
-        }
+    .grid-cell.highlight {
+        background-color: lightgray;
+    }
 
     .header-cell {
         background-color: #f0f0f0;
@@ -62,26 +69,40 @@
     .winner-container {
         text-align: center;
         margin-bottom: 20px;
+        padding: 15px;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 80%;
+        max-width: 600px; 
+        margin-left: auto;  
+        margin-right: auto;
     }
 
     .stats-container {
         margin-top: 20px;
         background-color: #f5f5f5;
-        padding: 10px;
+        padding: 20px;
         border-radius: 8px;
-        width: 50%;
+        width: 80%;
+        max-width: 800px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        text-align: center; 
+        margin-left: auto;  
+        margin-right: auto; 
     }
 
-        .stats-container table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+    .stats-container table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0 auto;
+    }
 
-        .stats-container th, .stats-container td {
-            padding: 10px;
-            text-align: left;
-            border: 1px solid #ddd;
-        }
+    .stats-container th, .stats-container td {
+        padding: 10px;
+        text-align: center;
+        border: 1px solid #ddd;
+    }
 
     .scrollable-container {
         max-height: 400px;
@@ -93,95 +114,124 @@
 
     .button-container {
         display: flex;
-        justify-content: space-around;
+        justify-content: center;
         margin-top: 20px;
-        width: 50%;
+        width: 100%;
     }
 
     button {
-        padding: 10px 20px;
-        background-color: #4CAF50;
+        padding: 10px 30px;
+        margin: 0 15px;
+        background-color: #b56b77; 
         color: white;
         border: none;
         cursor: pointer;
-        border-radius: 4px;
+        border-radius: 8px;
+        transition: background-color 0.3s ease;
+        font-size: 1.1em; 
     }
 
-        button:hover {
-            background-color: #45a049;
-        }
+    button:hover {
+        background-color: #a25d68; 
+    }
 
+    h3, h4 {
+        color: #663e43;
+        font-weight: bold;
+        text-align: center;
+    }
+
+    p {
+        font-size: 1.1em;
+        color: #663e43;
+        text-align: center;
+    }
+    .emoji {
+        font-size: 1.5em; 
+        margin-left: 10px; 
+    }
 </style>
 
-<div class="winner-container">
-    <h3>FIN DE PARTIE</h3>
+<div class="card">
+    <div class="winner-container">
+        <h3>FIN DE PARTIE</h3>
 
-    @if (GameState.WinnerName != null)
+        @if (GameState.WinnerName != null)
+        {
+            <p>Le gagnant est : <strong>@GameState.WinnerName <span class="emoji">🏆</span></strong></p>
+        }
+        else
+        {
+            <p>Le jeu est terminé, mais aucun gagnant n'a été déterminé.</p>
+        }
+    </div>
+
+    @if (PlayerStats != null && PlayerStats.Count > 0)
     {
-        <p>Le gagnant est : <strong>@GameState.WinnerName</strong></p>
+        <div class="stats-container">
+            <h4>Statistiques des joueurs</h4>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Joueur</th>
+                        <th>Parties Gagnées</th>
+                        <th>Taux de Victoires (%)</th>
+                        <th>Durée de la Dernière Partie</th>
+                        
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var player in PlayerStats)
+                    {
+                        var totalGames = GameState.TotalGames;
+                        var winRate = totalGames > 0 ? (double)player.Value / totalGames * 100 : 0; 
+                        
+                        <tr>
+                            <td>@player.Key</td>
+                            <td>@player.Value</td>
+                            <td>@winRate.ToString("F2")%</td> 
+                            <td>@GameState.GetGameDuration().ToString(@"hh\:mm\:ss")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
     else
     {
-        <p>Le jeu est terminé, mais aucun gagnant n'a été déterminé.</p>
+        <p>Chargement des données des joueurs...</p>
+    }
+
+    <div class="button-container">
+        <button @onclick="StartNewGameIA">Nouvelle partie IA</button>
+        <button @onclick="StartNewGamePlayer">Nouvelle partie avec un autre joueur</button>
+    </div>
+
+    @if (!string.IsNullOrEmpty(DebugMessage))
+    {
+        <div class="debug-container">@DebugMessage</div>
     }
 </div>
-
-@if (PlayerStats != null && PlayerStats.Count > 0)
-{
-    <div class="stats-container">
-        <h4>Statistiques des joueurs</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>Joueur</th>
-                    <th>Parties Gagnées</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var player in PlayerStats)
-                {
-                    <tr>
-                        <td>@player.Key</td>
-                        <td>@player.Value</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-}
-else
-{
-    <p>Chargement des données des joueurs...</p>
-}
-
-<div class="button-container">
-    <button @onclick="StartNewGameIA">Nouvelle partie IA</button>
-    <button @onclick="StartNewGamePlayer">Nouvelle partie avec un autre joueur</button>
-</div>
-
-@if (!string.IsNullOrEmpty(DebugMessage))
-{
-    <div>@DebugMessage</div>
-}
 
 @code {
     private string DebugMessage { get; set; }
     private Dictionary<string, int> PlayerStats { get; set; } = new Dictionary<string, int>();
 
-    // Lors de l'initialisation de la page
     protected override async Task OnInitializedAsync()
     {
-        PlayerStats =GameState.GetPlayerVictories();
+        PlayerStats = GameState.GetPlayerVictories();
     }
 
     private async Task StartNewGameIA()
     {
+        GameState.StartGame();
         Navigation.NavigateTo("/chooseShip/ia");
     }
 
     private async Task StartNewGamePlayer()
     {
-        DebugMessage = "Fonctionnalité StartNewGamePlayer non encore implémentée.";
+        GameState.StartGame();
+        DebugMessage = "Fonction non disponible";
         Console.WriteLine(DebugMessage);
     }
 }
