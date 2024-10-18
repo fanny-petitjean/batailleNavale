@@ -5,7 +5,7 @@ namespace BattleShip.Models
     {
         private int GridSize { get; set; }
         private const char EmptyCell = '\0';
-        public List<Ship> ships = new List<Ship>
+        public List<Ship> Ships = new List<Ship>
     {
         new Ship('A', 4),
         new Ship('B', 4),
@@ -37,10 +37,10 @@ namespace BattleShip.Models
 
             GridSize = gridSize;
             Grid = new char[GridSize, GridSize];
-            this.ships = ships;
+            this.Ships = ships;
             foreach (var ship in ships)
             {
-                PlaceShip(Grid, ship, ship.positionX, ship.positionY, ship.isHorizontal);
+                PlaceShip(Grid, ship, ship.PositionX, ship.PositionY, ship.IsHorizontal);
             }
         
         }
@@ -48,7 +48,7 @@ namespace BattleShip.Models
         {
             GridSize = gridSize;
             Grid = grid;
-            this.ships = ships;
+            this.Ships = ships;
         }
         private void InitializeGrid()
         {
@@ -63,7 +63,7 @@ namespace BattleShip.Models
         private void PlaceAllShips()
         {
 
-            foreach (var ship in ships)
+            foreach (var ship in Ships)
             {
                 bool placed = false;
                 while (!placed)
@@ -71,7 +71,7 @@ namespace BattleShip.Models
                     int x = Random.Shared.Next(GridSize);
                     int y = Random.Shared.Next(GridSize);
                     bool isHorizontal = Random.Shared.Next(2) == 0;
-                    if (IsSpaceAvailable(Grid, x, y, ship.size, isHorizontal))
+                    if (IsSpaceAvailable(Grid, x, y, ship.Size, isHorizontal))
                     {
                         PlaceShip(Grid, ship, x, y, isHorizontal);
                         placed = true;
@@ -82,29 +82,29 @@ namespace BattleShip.Models
         public void PlaceShip(char[,] grid, Ship ship, int x, int y, bool isHorizontal)
         {
             bool placed = false;
-            ship.isHorizontal = isHorizontal;
-            if (ship.isHorizontal)
+            ship.IsHorizontal = isHorizontal;
+            if (ship.IsHorizontal)
             {
-                if (y + ship.size <= GridSize && IsSpaceAvailable(grid, x, y, ship.size, ship.isHorizontal))
+                if (y + ship.Size <= GridSize && IsSpaceAvailable(grid, x, y, ship.Size, ship.IsHorizontal))
                 {
-                    for (int i = 0; i < ship.size; i++)
+                    for (int i = 0; i < ship.Size; i++)
                     {
-                        grid[x, y + i] = ship.letter;
+                        grid[x, y + i] = ship.Letter;
                     }
-                    ship.positionX = x;
-                    ship.positionY = y;
+                    ship.PositionX = x;
+                    ship.PositionY = y;
                 }
             }
             else
             {
-                if (x + ship.size <= GridSize && IsSpaceAvailable(grid, x, y, ship.size, ship.isHorizontal))
+                if (x + ship.Size <= GridSize && IsSpaceAvailable(grid, x, y, ship.Size, ship.IsHorizontal))
                 {
-                    for (int i = 0; i < ship.size; i++)
+                    for (int i = 0; i < ship.Size; i++)
                     {
-                        grid[x + i, y] = ship.letter;
+                        grid[x + i, y] = ship.Letter;
                     }
-                    ship.positionX = x;
-                    ship.positionY = y;
+                    ship.PositionX = x;
+                    ship.PositionY = y;
                 }
             }
         }

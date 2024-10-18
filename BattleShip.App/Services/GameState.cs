@@ -16,11 +16,11 @@ public class GameState
     public bool IsPlayerTurn { get; set; }
     public string WinnerName { get; set; }
     public int GridSize { get; set; }
-    public DateTime? startTime;
-    public DateTime? endTime;
+    public DateTime? StartTime;
+    public DateTime? EndTime;
     public int TotalGames { get; private set; }
 
-    public Dictionary<string, int> playerLosses { get; set; } = new Dictionary<string, int>();
+    public Dictionary<string, int> PlayerLosses { get; set; } = new Dictionary<string, int>();
 
     private Dictionary<string, int> playerVictories = new Dictionary<string, int>();
     public Dictionary<string, int> ShipsSunkByPlayer { get; private set; } = new Dictionary<string, int>();
@@ -42,7 +42,7 @@ public class GameState
 
     public void InitializeNewGame(char[,] playerGrid, string gameId, int gridSize, string[,] playerGridImage, bool?[,] opponentGrid)
     {
-        NotifyStateChanged(); // Notifiez le changement d'�tat
+        NotifyStateChanged(); 
 
         GridSize = gridSize;
         PlayerGrid = playerGrid;
@@ -199,24 +199,24 @@ public class GameState
     public Dictionary<string, int> GetPlayerLosses()
     {
         
-        return playerLosses;
+        return PlayerLosses;
     }
 
     public void StartGame()
     {
-        startTime = DateTime.Now;
-        endTime = null;
+        StartTime = DateTime.Now;
+        EndTime = null;
     }
     public void EndGame()
     {
-        TotalGames++; 
-        endTime = DateTime.Now;
+        TotalGames++;
+        EndTime = DateTime.Now;
     }
     public TimeSpan GetGameDuration()
     {
-        if (startTime.HasValue && endTime.HasValue)
+        if (StartTime.HasValue && EndTime.HasValue)
         {
-            return endTime.Value - startTime.Value;
+            return EndTime.Value - StartTime.Value;
         }
         return TimeSpan.Zero; 
     }

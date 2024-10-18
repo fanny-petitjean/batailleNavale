@@ -5,30 +5,30 @@ namespace BattleShip.Models
 {
     public class Game
     {
-        public List<Player> players { get; set; }
+        public List<Player> Players { get; set; }
 
-        public Player? winner { get; set; }
-        public bool isWinner { get; set; }
-        public GameHistory history { get; private set; }
-        private static readonly char[] shipLetter = { 'A', 'B', 'C', 'D', 'E', 'F' };
-        private static readonly int[] shipSize = { 2, 3, 3, 4, 5 };
-        public int currentPlayerIndex { get; set; } 
+        public Player? Winner { get; set; }
+        public bool IsWinner { get; set; }
+        public GameHistory History { get; private set; }
+        private static readonly char[] ShipLetter = { 'A', 'B', 'C', 'D', 'E', 'F' };
+        private static readonly int[] ShipSize = { 2, 3, 3, 4, 5 };
+        public int CurrentPlayerIndex { get; set; } 
         public Game()
         {
-            this.players = new List<Player>();
-            this.history = new GameHistory();
+            this.Players = new List<Player>();
+            this.History = new GameHistory();
         }
 
         public Game(List<Player> player, int currentPlayer)
         {
-            this.players = player;
-            this.history = new GameHistory();
-            currentPlayerIndex = currentPlayer;
+            this.Players = player;
+            this.History = new GameHistory();
+            CurrentPlayerIndex = currentPlayer;
         }
 
         public string attack(Player attacker, Player defender, int x, int y)
         {
-            char cell = defender.placeShipGrid.Grid[x, y];
+            char cell = defender.PlaceShipGrid.Grid[x, y];
 
             string response = "null";
 
@@ -36,8 +36,8 @@ namespace BattleShip.Models
             {
                 changeCell(defender, attacker, x, y, 'X', cell);
 
-                Ship ship = defender.placeShipGrid.ships.FirstOrDefault(s => s.letter == cell);
-                if (ship != null && ship.isDead)
+                Ship ship = defender.PlaceShipGrid.Ships.FirstOrDefault(s => s.Letter == cell);
+                if (ship != null && ship.IsDead)
                 {
                     response = "coulé"; 
                 }
@@ -57,7 +57,7 @@ namespace BattleShip.Models
                 changeCell(defender, attacker, x, y, 'O', cell);
                 response = "loupé"; 
             }
-            if (defender.name == "ia")
+            if (defender.Name == "ia")
             {
                 playIA(defender, attacker);
             }
@@ -67,15 +67,15 @@ namespace BattleShip.Models
         
         public void playIA(Player ia, Player player)
         {
-            Move lastMove = history.LastHitMoveByPlayer(ia.name);
+            Move lastMove = History.LastHitMoveByPlayer(ia.Name);
 
             if (lastMove != null)
             {
-                int lastAttackX = lastMove.x;
-                int lastAttackY = lastMove.y;
+                int lastAttackX = lastMove.X;
+                int lastAttackY = lastMove.Y;
 
                 int perimeter = 1;
-                switch (ia.iaDifficulty)
+                switch (ia.IaDifficulty)
                 {
                     case 1:
                         perimeter = 5;
@@ -88,7 +88,7 @@ namespace BattleShip.Models
                         break;
                 }
 
-                int[][] possibleMoves = player.placeShipGrid.GetPossibleMovesAround(lastAttackX, lastAttackY, perimeter);
+                int[][] possibleMoves = player.PlaceShipGrid.GetPossibleMovesAround(lastAttackX, lastAttackY, perimeter);
 
                 if (possibleMoves.Length > 0)
                 {
@@ -97,14 +97,14 @@ namespace BattleShip.Models
                 }
                 else
                 {
-                    int[][] availableMoves = player.placeShipGrid.GetAvailableMoves();
+                    int[][] availableMoves = player.PlaceShipGrid.GetAvailableMoves();
                     var randomMove = availableMoves[Random.Shared.Next(availableMoves.Length)];
                     attack(ia, player, randomMove[0], randomMove[1]);
                 }
             }
             else
             {
-                int[][] availableMoves = player.placeShipGrid.GetAvailableMoves();
+                int[][] availableMoves = player.PlaceShipGrid.GetAvailableMoves();
                 var randomMove = availableMoves[Random.Shared.Next(availableMoves.Length)];
                 attack(ia, player, randomMove[0], randomMove[1]);
             }
@@ -115,28 +115,28 @@ namespace BattleShip.Models
 
         public void changeCell(Player defender, Player attacker, int x, int y, char touch, char letter)
         {
-            defender.placeShipGrid.Grid[x, y] = touch; 
+            defender.PlaceShipGrid.Grid[x, y] = touch; 
 
             if (touch == 'X') 
             {
-                Ship ship = defender.placeShipGrid.ships.FirstOrDefault(s => s.letter == letter);
+                Ship ship = defender.PlaceShipGrid.Ships.FirstOrDefault(s => s.Letter == letter);
                 if (ship != null)
                 {
                     ship.RegisterHit(); 
 
-                    if (ship.isDead) 
+                    if (ship.IsDead) 
                     {
-                        history.AddMove(new Move(attacker, defender, x, y, true, letter, "coulé"));
+                        History.AddMove(new Move(attacker, defender, x, y, true, letter, "coulé"));
                     }
                     else 
                     {
-                        history.AddMove(new Move(attacker, defender, x, y, true, letter, "touché"));
+                        History.AddMove(new Move(attacker, defender, x, y, true, letter, "touché"));
                     }
                 }
             }
             else
             {
-                history.AddMove(new Move(attacker, defender, x, y, false, '\0', "loupé"));
+                History.AddMove(new Move(attacker, defender, x, y, false, '\0', "loupé"));
             }
         }
 
@@ -147,13 +147,13 @@ namespace BattleShip.Models
 
         public bool checkWinner()
         {
-            foreach (Player p in players)
+            foreach (Player p in Players)
             {
-                bool allShipDead = p.placeShipGrid.ships.All(ship => ship.isDead);
+                bool allShipDead = p.PlaceShipGrid.Ships.All(ship => ship.IsDead);
                 if (allShipDead)
                 {
-                    winner = players.FirstOrDefault(player => player != p);
-                    isWinner = true;
+                    Winner = Players.FirstOrDefault(player => player != p);
+                    IsWinner = true;
                     return true;
                 }
             }
@@ -162,18 +162,18 @@ namespace BattleShip.Models
 
         public void placeShip(Player player, Ship ship, int x, int y, string orientation)
         {
-            char[,] grid = player.placeShipGrid.Grid;
+            char[,] grid = player.PlaceShipGrid.Grid;
             bool isHorizontal = orientation.ToLower() == "horizontal";
-            player.placeShipGrid.PlaceShip(grid, ship, x, y, isHorizontal);
+            player.PlaceShipGrid.PlaceShip(grid, ship, x, y, isHorizontal);
 
         }
 
     public List<PlaceShipGrid> displayGrid()
         {
             List<PlaceShipGrid> grids = new List<PlaceShipGrid>();
-            foreach (Player p in players)
+            foreach (Player p in Players)
             {
-                grids.Add(p.placeShipGrid);
+                grids.Add(p.PlaceShipGrid);
             }
             return grids;
 

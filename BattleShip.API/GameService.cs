@@ -5,20 +5,20 @@ namespace BattleShip.API
     [Authorize]  
     public class GameService
     {
-        public Dictionary<Guid, Game> games = new Dictionary<Guid, Game>();
-        private Dictionary<string, int> playerVictories = new Dictionary<string, int>();
+        public Dictionary<Guid, Game> Games = new Dictionary<Guid, Game>();
+        private Dictionary<string, int> PlayerVictories = new Dictionary<string, int>();
 
 
         public Guid AddGame(Game game)
         {
             Guid guid = Guid.NewGuid();
-            games.Add(guid, game);
+            Games.Add(guid, game);
             return guid;
         }
 
         public Game GetGame(Guid gameId)
         {
-            if (games.TryGetValue(gameId, out var game))
+            if (Games.TryGetValue(gameId, out var game))
             {
                 return game;
             }
@@ -26,17 +26,17 @@ namespace BattleShip.API
         }
         public Dictionary<string, int> GetPlayerVictories()
         {
-            return playerVictories;
+            return PlayerVictories;
         }
         public void IncrementPlayerVictory(string playerName)
         {
-            if (playerVictories.ContainsKey(playerName))
+            if (PlayerVictories.ContainsKey(playerName))
             {
-                playerVictories[playerName]++;
+                PlayerVictories[playerName]++;
             }
             else
             {
-                playerVictories[playerName] = 1;
+                PlayerVictories[playerName] = 1;
             }
         }
     }

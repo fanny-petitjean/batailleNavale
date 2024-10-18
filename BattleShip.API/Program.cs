@@ -101,14 +101,14 @@ app.MapPost("/newGame/{gameType}", async ([FromRoute] string gameType, [FromQuer
 
     Guid guid = gameService.AddGame(game);
 
-    var PlayerGrid = converter.ConvertCharArrayToList(player.placeShipGrid.Grid);
-    var OpponentGrid = converter.ConvertBoolArrayToList(game.displayOpponentGrid(opponent.placeShipGrid));
+    var PlayerGrid = converter.ConvertCharArrayToList(player.PlaceShipGrid.Grid);
+    var OpponentGrid = converter.ConvertBoolArrayToList(game.displayOpponentGrid(opponent.PlaceShipGrid));
 
     var response = new
     {
         GameId = guid.ToString(),
-        Player = player.name,
-        Opponent = opponent.name,
+        Player = player.Name,
+        Opponent = opponent.Name,
         PlayerGrid = PlayerGrid,
         OpponentGrid = OpponentGrid
     };
@@ -125,48 +125,48 @@ app.MapPost("/attack/{gameId}", (Guid gameId, [FromQuery] int x, [FromQuery] int
         return Results.NotFound("Game not found");
     }
 
-    var player = game.players.First(); 
-    var ia = game.players.Last();
+    var player = game.Players.First(); 
+    var ia = game.Players.Last();
 
     string responseChar = game.attack(player, ia, x, y);
 
     bool gameOver = false;
-    string winner = game.winner?.name;
+    string winner = game.Winner?.Name;
     if (responseChar == "gagnant")
     {
         gameOver = game.checkWinner();
-        winner = game.winner?.name; 
+        winner = game.Winner?.Name; 
     }
 
     char IAH = '.';
     int iaX = -1;
     int iaY = -1;
     Move moveIa = null;
-    Move move = game.history.LastMove();
-    x = move.x;
-    y = move.y;
-    string playerId = move.attacker.id.ToString();
+    Move move = game.History.LastMove();
+    x = move.X;
+    y = move.Y;
+    string playerId = move.Attacker.Id.ToString();
     string iaId = "";
     string iaTouch = "";
 
-    if (game.history.LastMoveName() == "ia")
+    if (game.History.LastMoveName() == "ia")
     {
-        IAH = move.isHit ? 'X' : 'O';
-        iaTouch = move.touch;
-        iaX = move.x;
-        iaY = move.y;
+        IAH = move.IsHit ? 'X' : 'O';
+        iaTouch = move.Touch;
+        iaX = move.X;
+        iaY = move.Y;
         gameOver = game.checkWinner();
-        winner = game.winner?.name;
-        iaId = move.attacker.id.ToString();
-        Move move1 = game.history.SecondLastMove();
-        x = move1.x;
-        y = move1.y;
-        playerId = move1.attacker.id.ToString();
+        winner = game.Winner?.Name;
+        iaId = move.Attacker.Id.ToString();
+        Move move1 = game.History.SecondLastMove();
+        x = move1.X;
+        y = move1.Y;
+        playerId = move1.Attacker.Id.ToString();
     }
 
     var response = new
     {
-        PlayerHit = ia.placeShipGrid.Grid[x, y] == 'X',
+        PlayerHit = ia.PlaceShipGrid.Grid[x, y] == 'X',
         PlayerX = x,
         PlayerY = y,
         PlayerId = playerId,
@@ -192,32 +192,23 @@ app.MapGet("/history/{gameId}", (Guid gameId) =>
         return Results.NotFound("Game not found");
     }
 
-    var moves = game.history.GetMoves();
+    var moves = game.History.GetMoves();
     if (moves == null || !moves.Any())
     {
         Console.WriteLine($"No moves found for game with ID {gameId}");
         return Results.Ok(new List<Move>());
     }
-    Console.WriteLine($"History for game with ID {gameId} retrieved successfully.");
 
     var history = moves.Select(m => new
     {
-        AttackerName = m.attacker.name, 
-        DefenderName= m.defender.name,
-        X = m.x,
-        Y = m.y,
-        IsHit = m.isHit,
-        Touch = m.touch,
-        PreviousLetter = m.previousValue
+        AttackerName = m.Attacker.Name, 
+        DefenderName= m.Defender.Name,
+        X = m.X,
+        Y = m.Y,
+        IsHit = m.IsHit,
+        Touch = m.Touch,
+        PreviousLetter = m.PreviousValue
     }).ToList();
-    Console.WriteLine($"History for game with ID {history.ToString} retrieved successfully.");
-    foreach (var move in history)
-    {
-        Console.WriteLine($"Move: {JsonSerializer.Serialize(move)}");
-    }
-
-
-
 
     return Results.Ok(history);
 });
@@ -232,16 +223,16 @@ app.MapPost("/undo/{gameId}", (Guid gameId) =>
         return Results.NotFound("Game not found");
     }
 
-    var lstMove = game.history.LastMove();
-    var x = lstMove.x;
-    var y = lstMove.y;
-    var previousValue = lstMove.previousValue.ToString();
+    var lstMove = game.History.LastMove();
+    var x = lstMove.X;
+    var y = lstMove.Y;
+    var previousValue = lstMove.PreviousValue.ToString();
 
-    var success = game.history.RemoveMove();
-    lstMove = game.history.LastMove();
-    x = lstMove.x;
-    y = lstMove.y;
-    previousValue = lstMove.previousValue.ToString();
+    var success = game.History.RemoveMove();
+    lstMove = game.History.LastMove();
+    x = lstMove.X;
+    y = lstMove.Y;
+    previousValue = lstMove.PreviousValue.ToString();
 
 
     if (!success)
@@ -256,17 +247,16 @@ app.MapGet("/restart/{gameId}", (Guid gameId) =>
 {
 
     var game = gameService.GetGame(gameId);
-    Console.WriteLine("lldld");
 
     if (game == null)
     {
         return Results.NotFound("Game not found");
     }
-    var success = game.history.RemoveMoveAll();
+    var success = game.History.RemoveMoveAll();
 
 
-    var PlayerGrid = converter.ConvertCharArrayToList(game.players[0].placeShipGrid.Grid);
-    var OpponentGrid = converter.ConvertBoolArrayToList(game.displayOpponentGrid(game.players[1].placeShipGrid));
+    var PlayerGrid = converter.ConvertCharArrayToList(game.Players[0].PlaceShipGrid.Grid);
+    var OpponentGrid = converter.ConvertBoolArrayToList(game.displayOpponentGrid(game.Players[1].PlaceShipGrid));
 
     var response = new
     {
@@ -274,8 +264,6 @@ app.MapGet("/restart/{gameId}", (Guid gameId) =>
         PlayerGrid = PlayerGrid,
         OpponentGrid = OpponentGrid
     };
-    Console.WriteLine("lldlffffffffffffffd");
-
 
     return Results.Ok(response);
 });

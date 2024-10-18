@@ -2,91 +2,91 @@
 {
     public class GameHistory
     {
-        private List<Move> moves;
+        private List<Move> Moves;
 
         public GameHistory() {
-            moves = new List<Move>();
+            Moves = new List<Move>();
         }
 
         public void AddMove(Move move)
         {
-            moves.Add(move);
+            Moves.Add(move);
         }
 
         public bool RemoveMove()
         {
-            if (moves.Count == 0) return false;
-            Move lastMove = moves.Last();
-            if (lastMove.defender.placeShipGrid.Grid[lastMove.x, lastMove.y] == 'X')
+            if (Moves.Count == 0) return false;
+            Move lastMove = Moves.Last();
+            if (lastMove.Defender.PlaceShipGrid.Grid[lastMove.X, lastMove.Y] == 'X')
             {
-                Ship shipToUpdate = lastMove.defender.placeShipGrid.ships.FirstOrDefault(ship => ship.letter == lastMove.previousValue);
+                Ship shipToUpdate = lastMove.Defender.PlaceShipGrid.Ships.FirstOrDefault(ship => ship.Letter == lastMove.PreviousValue);
                 shipToUpdate.UnregisterHit();
-                shipToUpdate.isDead = false;
+                shipToUpdate.IsDead = false;
             }
-            lastMove.defender.placeShipGrid.Grid[lastMove.x, lastMove.y] = lastMove.previousValue;
+            lastMove.Defender.PlaceShipGrid.Grid[lastMove.X, lastMove.Y] = lastMove.PreviousValue;
 
 
 
-            moves.Remove(lastMove);
+            Moves.Remove(lastMove);
             return true;
         }
 
         public bool RemoveMoveAll()
         {
-            if (moves.Count == 0) return false;
-            foreach (Move move in moves)
+            if (Moves.Count == 0) return false;
+            foreach (Move move in Moves)
             {
-                if (move.defender.placeShipGrid.Grid[move.x, move.y] == 'X')
+                if (move.Defender.PlaceShipGrid.Grid[move.X, move.Y] == 'X')
                 {
-                    Ship shipToUpdate = move.defender.placeShipGrid.ships.FirstOrDefault(ship => ship.letter == move.previousValue);
+                    Ship shipToUpdate = move.Defender.PlaceShipGrid.Ships.FirstOrDefault(ship => ship.Letter == move.PreviousValue);
                     shipToUpdate.UnregisterHit();
-                    shipToUpdate.isDead = false;
+                    shipToUpdate.IsDead = false;
                 }
-                move.defender.placeShipGrid.Grid[move.x, move.y] = move.previousValue;
+                move.Defender.PlaceShipGrid.Grid[move.X, move.Y] = move.PreviousValue;
             }
-            
-            moves = new List<Move>();
+
+            Moves = new List<Move>();
             return true;
         }
 
         public void DisplayHistory()
         {
-            foreach (Move move in moves)
+            foreach (Move move in Moves)
             {
-                Console.WriteLine($"Le joueur {move.attacker.name} à la positiion {move.x}, {move.y} à {move.touch}");
+                Console.WriteLine($"Le joueur {move.Attacker.Name} à la positiion {move.X}, {move.Y} à {move.Touch}");
             }
         }
 
         public string LastMoveName()
         {
-            if (moves.Count == 0) return null;
-            Move lastMove = moves.Last();
-            return lastMove.attacker.name;
+            if (Moves.Count == 0) return null;
+            Move lastMove = Moves.Last();
+            return lastMove.Attacker.Name;
         }
 
         public Move LastMove()
         {
-            if (moves.Count == 0) return null;
-            return moves.Last();
+            if (Moves.Count == 0) return null;
+            return Moves.Last();
         }
         public Move SecondLastMove()
         {
-            if (moves.Count < 2) return null;
-            return moves[moves.Count - 2]; 
+            if (Moves.Count < 2) return null;
+            return Moves[Moves.Count - 2]; 
         }
 
         public List<Move> GetMoves()
         {
-            return moves;
+            return Moves;
         }
         public Move LastHitMoveByPlayer(string playerName)
         {
-            for (int i = moves.Count - 1; i >= 0; i--)
+            for (int i = Moves.Count - 1; i >= 0; i--)
             {
-                if (moves[i].attacker.name.Equals(playerName, StringComparison.OrdinalIgnoreCase) &&
-                    (moves[i].touch.Equals("touché", StringComparison.OrdinalIgnoreCase)))
+                if (Moves[i].Attacker.Name.Equals(playerName, StringComparison.OrdinalIgnoreCase) &&
+                    (Moves[i].Touch.Equals("touché", StringComparison.OrdinalIgnoreCase)))
                 {
-                    return moves[i];
+                    return Moves[i];
                 }
             }
             return null;

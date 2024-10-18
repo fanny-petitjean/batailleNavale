@@ -3,47 +3,44 @@ namespace BattleShip.Models
 {
     public class Ship
     {
-        public Guid id { get; }
-        public char letter { get; set; }
-        public int size { get; set; }
-        public int hits { get; set; }
-        public bool isDead { get; set; }
-        public bool isHorizontal { get; set; }
-        public int positionX { get; set; }
-        public int positionY { get; set; }
+        public Guid Id { get; }
+        public char Letter { get; set; }
+        public int Size { get; set; }
+        public int Hits { get; set; }
+        public bool IsDead { get; set; }
+        public bool IsHorizontal { get; set; }
+        public int PositionX { get; set; }
+        public int PositionY { get; set; }
 
         public Ship(char letter, int size, bool isHorizontal, int positionX, int positionY)
         {
-            this.id = Guid.NewGuid();
-            this.letter = letter;
-            this.size = size;
-            this.hits = 0;
-            this.isHorizontal = isHorizontal;
-            this.positionX = positionX;
-            this.positionY = positionY;
+            this.Id = Guid.NewGuid();
+            this.Letter = letter;
+            this.Size = size;
+            this.Hits = 0;
+            this.IsHorizontal = isHorizontal;
+            this.PositionX = positionX;
+            this.PositionY = positionY;
 
         }
         public Ship(char letter, int size)
         {
-            this.id = Guid.NewGuid();
-            this.letter = letter;
-            this.size = size;
-            this.hits = 0;
-            this.isHorizontal = isHorizontal;
-            this.positionX = positionX;
-            this.positionY = positionY;
+            this.Id = Guid.NewGuid();
+            this.Letter = letter;
+            this.Size = size;
+            this.Hits = 0;
 
         }
         public void RegisterHit()
         {
-            hits++;
+            Hits++;
 
-            if (hits >= size)
+            if (Hits >= Size)
             {
-                isDead = true;
+                IsDead = true;
             }
         }
-        public void UnregisterHit() { hits--; }
+        public void UnregisterHit() { Hits--; }
 
     }
 }
